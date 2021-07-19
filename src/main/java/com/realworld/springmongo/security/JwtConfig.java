@@ -1,7 +1,6 @@
 package com.realworld.springmongo.security;
 
 import com.realworld.springmongo.user.UserTokenProvider;
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

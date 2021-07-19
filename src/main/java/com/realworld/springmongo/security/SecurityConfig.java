@@ -8,14 +8,26 @@ import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
+import org.springframework.web.reactive.config.CorsRegistry;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
 
 @Configuration
 @EnableWebFluxSecurity
-public class SecurityConfig {
+public class SecurityConfig implements WebFluxConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("*")
+                .allowedMethods("*")
+                .allowedHeaders("*");
+    }
+
     @Bean
-    SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, AuthenticationWebFilter webFilter, EndpointsSecurityConfig configurer) {
-        var endpointsConfig = configurer.configureEndpoints(http.authorizeExchange());
-        return endpointsConfig.and()
+    SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, AuthenticationWebFilter webFilter, EndpointsSecurityConfig endpointsConfig) {
+        var authorizeExchange = http.authorizeExchange();
+        return endpointsConfig.apply(authorizeExchange)
+                .and()
                 .addFilterAt(webFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .httpBasic().disable()
                 .csrf().disable()
@@ -25,7 +37,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    EndpointsSecurityConfig authorizeExchangeSpecConfigurer() {
+    EndpointsSecurityConfig endpointsConfig() {
         return http -> http
                 .pathMatchers(HttpMethod.POST, "/api/users", "/api/users/login").permitAll()
                 .pathMatchers(HttpMethod.GET, "/api/profiles/**").permitAll()
@@ -35,6 +47,6 @@ public class SecurityConfig {
 
     @FunctionalInterface
     interface EndpointsSecurityConfig {
-        ServerHttpSecurity.AuthorizeExchangeSpec configureEndpoints(ServerHttpSecurity.AuthorizeExchangeSpec http);
+        ServerHttpSecurity.AuthorizeExchangeSpec apply(ServerHttpSecurity.AuthorizeExchangeSpec http);
     }
 }

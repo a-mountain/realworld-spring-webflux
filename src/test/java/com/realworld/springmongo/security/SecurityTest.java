@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -77,7 +78,8 @@ public class SecurityTest {
         }
 
         @Bean
-        SecurityConfig.EndpointsSecurityConfig configurer() {
+        @Primary
+        SecurityConfig.EndpointsSecurityConfig testEndpointsConfig() {
             return http -> http
                     .pathMatchers("/permitAll").permitAll()
                     .pathMatchers("/authenticated").authenticated();
