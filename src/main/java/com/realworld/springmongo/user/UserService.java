@@ -1,6 +1,7 @@
 package com.realworld.springmongo.user;
 
 import com.realworld.springmongo.exceptions.InvalidRequestException;
+import com.realworld.springmongo.security.TokenPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -59,5 +60,11 @@ public class UserService {
     private UserAuthenticationResponse createAuthenticationResponse(User user) {
         var token = tokenProvider.getToken(user.getId());
         return UserAuthenticationResponse.fromUser(user, token);
+    }
+
+    public Mono<UserAuthenticationResponse> getCurrentUser(Mono<TokenPrincipal> principalMono) {
+        return principalMono
+                .flatMap(principal -> userRepository.findById(principal.userId()))
+                .zipWith(principalMono, (user, principal) -> UserAuthenticationResponse.fromUser(user, principal.token()));
     }
 }

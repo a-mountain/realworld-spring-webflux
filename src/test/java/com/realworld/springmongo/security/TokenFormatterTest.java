@@ -25,11 +25,4 @@ class TokenFormatterTest {
         var token = formatter.getRowToken(header);
         assertThat(token).isEqualTo("1234");
     }
-
-    @Test
-    void shouldFormatToken() {
-        var rowToken = "1234";
-        var formattedToken = formatter.formatToken(rowToken);
-        assertThat(formattedToken).isEqualTo("Token 1234");
-    }
 }

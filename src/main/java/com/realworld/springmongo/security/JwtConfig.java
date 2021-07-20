@@ -39,8 +39,9 @@ public class JwtConfig {
             var jws = tokenService.validate(token);
             var authority = new SimpleGrantedAuthority(("ROLE_USER"));
             var userId = jws.getBody().getSubject();
+            var tokenPrincipal = new TokenPrincipal(userId, token);
             return new UsernamePasswordAuthenticationToken(
-                    userId,
+                    tokenPrincipal,
                     token,
                     List.of(authority)
             );

@@ -2,6 +2,7 @@ package com.realworld.springmongo.security;
 
 import com.realworld.springmongo.user.UserTokenProvider;
 import helpers.ImportAppSecurity;
+import helpers.TokenHelper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @WebFluxTest(controllers = {SecurityTest.Controller.class})
@@ -27,9 +30,6 @@ public class SecurityTest {
 
     @Autowired
     UserTokenProvider tokenProvider;
-
-    @Autowired
-    TokenFormatter tokenFormatter;
 
     @Test
     void shouldReturn201() {
@@ -56,22 +56,18 @@ public class SecurityTest {
     @Test
     void shouldReturnUserId() {
         var userId = "1";
-        String token = getToken(userId);
+        var token = tokenProvider.getToken(userId);
         var result = client.get()
                 .uri("/authenticated")
-                .header(HttpHeaders.AUTHORIZATION, token)
+                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(token))
                 .exchange()
-                .expectBody(String.class)
+                .expectBody(TokenPrincipal.class)
                 .returnResult();
         var status = result.getStatus();
-        var body = result.getResponseBody();
+        var body = Objects.requireNonNull(result.getResponseBody());
         assertThat(status).isEqualTo(HttpStatus.OK);
-        assertThat(body).isEqualTo(userId);
-    }
-
-    private String getToken(String userId) {
-        var token = tokenProvider.getToken(userId);
-        return tokenFormatter.formatToken(token);
+        assertThat(body.userId()).isEqualTo(userId);
+        assertThat(body.token()).isEqualTo(token);
     }
 
     @TestConfiguration
@@ -93,8 +89,8 @@ public class SecurityTest {
     @RestController
     static class Controller {
         @GetMapping("/authenticated")
-        public Mono<String> token(@AuthenticationPrincipal Mono<String> userId) {
-            return userId;
+        public Mono<TokenPrincipal> token(@AuthenticationPrincipal Mono<TokenPrincipal> principalMono) {
+            return principalMono;
         }
 
         @GetMapping("/permitAll")

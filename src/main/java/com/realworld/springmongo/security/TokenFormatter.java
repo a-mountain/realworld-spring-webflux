@@ -12,8 +12,4 @@ public class TokenFormatter {
         var tokenStarts = "Token ".length();
         return authorizationHeader.substring(tokenStarts);
     }
-
-    public String formatToken(String rowToken) {
-        return "Token " + rowToken;
-    }
 }
