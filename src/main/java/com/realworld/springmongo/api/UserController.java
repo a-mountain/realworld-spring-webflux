@@ -1,10 +1,7 @@
 package com.realworld.springmongo.api;
 
 import com.realworld.springmongo.security.TokenPrincipal;
-import com.realworld.springmongo.user.UserAuthenticationRequest;
-import com.realworld.springmongo.user.UserAuthenticationResponse;
-import com.realworld.springmongo.user.UserRegistrationRequest;
-import com.realworld.springmongo.user.UserService;
+import com.realworld.springmongo.user.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,18 +17,23 @@ public class UserController {
 
     @PostMapping("/users/login")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<UserAuthenticationResponse> login(@RequestBody UserAuthenticationRequest request) {
+    public Mono<UserWithToken> login(@RequestBody UserAuthenticationRequest request) {
         return userService.login(request);
     }
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<UserAuthenticationResponse> signup(@RequestBody UserRegistrationRequest request) {
+    public Mono<UserWithToken> signup(@RequestBody UserRegistrationRequest request) {
         return userService.signup(request);
     }
 
     @GetMapping("/user")
-    public Mono<UserAuthenticationResponse> currentUser(@AuthenticationPrincipal Mono<TokenPrincipal> principalMono) {
+    public Mono<UserWithToken> currentUser(@AuthenticationPrincipal Mono<TokenPrincipal> principalMono) {
         return userService.getCurrentUser(principalMono);
+    }
+
+    @PutMapping("/user")
+    public Mono<UserWithToken> updateUser(@RequestBody UpdateUserRequest request, @AuthenticationPrincipal Mono<TokenPrincipal> principal) {
+        return userService.updateUser(request, principal);
     }
 }

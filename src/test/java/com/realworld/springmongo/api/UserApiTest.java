@@ -1,20 +1,18 @@
 package com.realworld.springmongo.api;
 
-import com.realworld.springmongo.user.UserAuthenticationRequest;
-import com.realworld.springmongo.user.UserAuthenticationResponse;
+import com.realworld.springmongo.user.UpdateUserRequest;
 import com.realworld.springmongo.user.UserRegistrationRequest;
 import com.realworld.springmongo.user.UserRepository;
-import helpers.TokenHelper;
+import com.realworld.springmongo.user.UserWithToken;
+import helpers.user.UserApiSupport;
 import helpers.user.UserSamples;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import java.util.Objects;
-
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -26,23 +24,28 @@ class UserApiTest {
     @Autowired
     UserRepository userRepository;
 
+    UserApiSupport api;
+
     @BeforeEach
     void setUp() {
+        api = new UserApiSupport(client);
         userRepository.deleteAll().block();
     }
 
     @Test
     void shouldSignupUser() {
         var userRegistrationRequest = UserSamples.sampleUserRegistrationRequest();
-        var result = signup(userRegistrationRequest)
-                .expectStatus()
-                .isCreated()
-                .expectBody(UserAuthenticationResponse.class)
-                .returnResult();
-        var body = Objects.requireNonNull(result.getResponseBody());
+
+        var result = api.signup(userRegistrationRequest);
+        var body = requireNonNull(result.getResponseBody());
+
+        assertThatSignupResponseIsValid(userRegistrationRequest, body);
+    }
+
+    private void assertThatSignupResponseIsValid(UserRegistrationRequest userRegistrationRequest, UserWithToken body) {
         assertThat(body.getUsername()).isEqualTo(userRegistrationRequest.getUsername());
         assertThat(body.getEmail()).isEqualTo(userRegistrationRequest.getEmail());
-        assertThat(body.getBio()).isEmpty();
+        assertThat(body.getBio()).isNull();
         assertThat(body.getImage()).isNull();
         assertThat(body.getToken()).isNotEmpty();
     }
@@ -50,54 +53,60 @@ class UserApiTest {
     @Test
     void shouldLoginRegisteredUser() {
         var userRegistrationRequest = UserSamples.sampleUserRegistrationRequest();
-        signup(userRegistrationRequest);
+        api.signup(userRegistrationRequest);
+
         var userAuthenticationRequest = UserSamples.sampleUserAuthenticationRequest();
-        var result = login(userAuthenticationRequest)
-                .expectStatus()
-                .isCreated()
-                .expectBody(UserAuthenticationResponse.class)
-                .returnResult()
-                .getResponseBody();
-        Objects.requireNonNull(result);
+        var result = api.login(userAuthenticationRequest).getResponseBody();
+
+        requireNonNull(result);
+        assertThatLoginResponseIsValid(userRegistrationRequest, result);
+    }
+
+    private void assertThatLoginResponseIsValid(UserRegistrationRequest userRegistrationRequest, UserWithToken result) {
         assertThat(result.getUsername()).isEqualTo(userRegistrationRequest.getUsername());
         assertThat(result.getEmail()).isEqualTo(userRegistrationRequest.getEmail());
-        assertThat(result.getBio()).isEmpty();
+        assertThat(result.getBio()).isNull();
         assertThat(result.getImage()).isNull();
         assertThat(result.getToken()).isNotEmpty();
     }
 
     @Test
     void shouldGetCurrentUser() {
-        var response = signup(UserSamples.sampleUserRegistrationRequest())
-                .expectBody(UserAuthenticationResponse.class)
-                .returnResult().getResponseBody();
-        Objects.requireNonNull(response);
-        var body = client.get()
-                .uri("/api/user")
-                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(response.getToken()))
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody(UserAuthenticationResponse.class)
-                .returnResult()
-                .getResponseBody();
-        Objects.requireNonNull(body);
+        var response = api.signup(UserSamples.sampleUserRegistrationRequest()).getResponseBody();
+        requireNonNull(response);
+
+        var body = api.currentUser(response.getToken()).getResponseBody();
+
+        requireNonNull(body);
         assertThat(body.getUsername()).isEqualTo(response.getUsername());
         assertThat(body.getEmail()).isEqualTo(response.getEmail());
     }
 
-    private WebTestClient.ResponseSpec signup(UserRegistrationRequest userRegistrationRequest) {
-        return client.post()
-                .uri("/api/users")
-                .bodyValue(userRegistrationRequest)
-                .exchange();
+    @Test
+    void shouldUpdateUser() {
+        var responseBody = api.signup(UserSamples.sampleUserRegistrationRequest()).getResponseBody();
+        requireNonNull(responseBody);
+
+        var updateUserRequest = UserSamples.sampleUpdateUserRequest();
+        var body = api.updateUser(responseBody.getToken(), updateUserRequest).getResponseBody();
+
+        requireNonNull(body);
+        assertThatUserIsSavedAfterUpdate(updateUserRequest);
+        assertThatUpdateUserResponseIsValid(updateUserRequest, body);
     }
 
+    private void assertThatUserIsSavedAfterUpdate(UpdateUserRequest updateUserRequest) {
+        var user = requireNonNull(userRepository.findByEmail(updateUserRequest.getEmail()).block());
+        assertThat(user.getUsername()).isEqualTo(updateUserRequest.getUsername());
+        assertThat(user.getBio()).isEqualTo(updateUserRequest.getBio());
+        assertThat(user.getEmail()).isEqualTo(updateUserRequest.getEmail());
+        assertThat(user.getImage()).isEqualTo(updateUserRequest.getImage());
+    }
 
-    private WebTestClient.ResponseSpec login(UserAuthenticationRequest userAuthenticationRequest) {
-        return client.post()
-                .uri("/api/users/login")
-                .bodyValue(userAuthenticationRequest)
-                .exchange();
+    private void assertThatUpdateUserResponseIsValid(UpdateUserRequest updateUserRequest, UserWithToken body) {
+        assertThat(body.getBio()).isEqualTo(updateUserRequest.getBio());
+        assertThat(body.getImage()).isEqualTo(updateUserRequest.getImage());
+        assertThat(body.getUsername()).isEqualTo(updateUserRequest.getUsername());
+        assertThat(body.getEmail()).isEqualTo(updateUserRequest.getEmail());
     }
 }

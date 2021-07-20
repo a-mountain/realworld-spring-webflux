@@ -3,6 +3,7 @@ package com.realworld.springmongo.user;
 import com.realworld.springmongo.exceptions.InvalidRequestException;
 import com.realworld.springmongo.security.JwtProperties;
 import com.realworld.springmongo.security.JwtSigner;
+import com.realworld.springmongo.security.TokenPrincipal;
 import helpers.user.UserSamples;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,8 @@ import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 class UserServiceTest {
 
@@ -27,9 +30,11 @@ class UserServiceTest {
 
     @Test
     void shouldThrowErrorWhenSignupWithDuplicateEmail() {
-        Mockito.when(userRepository.existsByEmail(Mockito.anyString())).thenReturn(Mono.just(true));
+        when(userRepository.existsByEmail(anyString())).thenReturn(Mono.just(true));
+
         var userRegistrationRequest = UserSamples.sampleUserRegistrationRequest();
         var throwable = catchThrowable(() -> service.signup(userRegistrationRequest).block());
+
         assertThat(throwable)
                 .isInstanceOf(InvalidRequestException.class)
                 .hasMessage("Email: already in use");
@@ -37,10 +42,12 @@ class UserServiceTest {
 
     @Test
     void shouldThrowErrorWhenSignupWithDuplicateUsername() {
-        Mockito.when(userRepository.existsByEmail(Mockito.anyString())).thenReturn(Mono.just(false));
-        Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(Mono.just(true));
+        when(userRepository.existsByEmail(anyString())).thenReturn(Mono.just(false));
+        when(userRepository.existsByUsername(anyString())).thenReturn(Mono.just(true));
+
         var userRegistrationRequest = UserSamples.sampleUserRegistrationRequest();
         var throwable = catchThrowable(() -> service.signup(userRegistrationRequest).block());
+
         assertThat(throwable)
                 .isInstanceOf(InvalidRequestException.class)
                 .hasMessage("Username: already in use");
@@ -48,9 +55,11 @@ class UserServiceTest {
 
     @Test
     void shouldThrowErrorWhenLoginWithUnregisteredUser() {
-        Mockito.when(userRepository.findByEmail(Mockito.any())).thenReturn(Mono.empty());
+        when(userRepository.findByEmail(Mockito.any())).thenReturn(Mono.empty());
+
         var userAuthenticationRequest = UserSamples.sampleUserAuthenticationRequest();
         var throwable = catchThrowable(() -> service.login(userAuthenticationRequest).block());
+
         assertThat(throwable)
                 .isInstanceOf(InvalidRequestException.class)
                 .hasMessage("Email: not found");
@@ -59,12 +68,42 @@ class UserServiceTest {
     @Test
     void shouldThrowErrorWhenWrongPassword() {
         var user = UserSamples.sampleUser(passwordService).build();
-        Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(Mono.just(user));
+        when(userRepository.findByEmail(anyString())).thenReturn(Mono.just(user));
+
         var userAuthenticationRequest = UserSamples.sampleUserAuthenticationRequest()
                 .setPassword("not default sample password");
         var throwable = catchThrowable(() -> service.login(userAuthenticationRequest).block());
+
         assertThat(throwable)
                 .isInstanceOf(InvalidRequestException.class)
                 .hasMessage("Password: invalid");
+    }
+
+    @Test
+    void shouldThrowErrorWhenUpdateUserWithDuplicateEmail() {
+        when(userRepository.existsByEmail(anyString())).thenReturn(Mono.just(true));
+        when(userRepository.existsByUsername(anyString())).thenReturn(Mono.just(false));
+        when(userRepository.findById(anyString())).thenReturn(Mono.just(UserSamples.sampleUser(passwordService).build()));
+
+        var updateUserRequest = UserSamples.sampleUpdateUserRequest();
+        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, Mono.just(new TokenPrincipal("1", "Token"))).block());
+
+        assertThat(throwable)
+                .isInstanceOf(InvalidRequestException.class)
+                .hasMessage("Email: already in use");
+    }
+
+    @Test
+    void shouldThrowErrorWhenUpdateUserWithDuplicateUsername() {
+        when(userRepository.existsByEmail(anyString())).thenReturn(Mono.just(false));
+        when(userRepository.existsByUsername(anyString())).thenReturn(Mono.just(true));
+        when(userRepository.findById(anyString())).thenReturn(Mono.just(UserSamples.sampleUser(passwordService).build()));
+
+        var updateUserRequest = UserSamples.sampleUpdateUserRequest();
+        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, Mono.just(new TokenPrincipal("1", "Token"))).block());
+
+        assertThat(throwable)
+                .isInstanceOf(InvalidRequestException.class)
+                .hasMessage("Username: already in use");
     }
 }

@@ -1,9 +1,6 @@
 package helpers.user;
 
-import com.realworld.springmongo.user.PasswordService;
-import com.realworld.springmongo.user.User;
-import com.realworld.springmongo.user.UserAuthenticationRequest;
-import com.realworld.springmongo.user.UserRegistrationRequest;
+import com.realworld.springmongo.user.*;
 
 import java.util.UUID;
 
@@ -34,5 +31,14 @@ public class UserSamples {
                 .username(SAMPLE_USERNAME)
                 .email(SAMPLE_EMAIL)
                 .encodedPassword(encodePassword);
+    }
+
+    public static UpdateUserRequest sampleUpdateUserRequest() {
+        return new UpdateUserRequest()
+                .setBio("new bio")
+                .setEmail("newemail@gmail.com")
+                .setImage("new image")
+                .setUsername("new username")
+                .setPassword("new password");
     }
 }
