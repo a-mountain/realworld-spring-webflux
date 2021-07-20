@@ -8,6 +8,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
+import static com.realworld.springmongo.helpers.Helpers.doIfPresent;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -71,28 +73,18 @@ public class UserService {
     public Mono<UserWithToken> updateUser(UpdateUserRequest request, Mono<TokenPrincipal> principalMono) {
         return principalMono
                 .flatMap(principal -> userRepository.findById(principal.userId()))
-                .flatMap(user -> {
-                    if (request.getBio() != null) {
-                        user.setBio(request.getBio());
-                    }
-                    if (request.getImage() != null) {
-                        user.setImage(request.getImage());
-                    }
-                    if (request.getPassword() != null) {
-                        updatePassword(request, user);
-                    }
-                    Mono<?> updateUsername = Mono.empty();
-                    if (request.getUsername() != null) {
-                        updateUsername = updateUsername(request, user);
-                    }
-                    Mono<?> updateEmail = Mono.empty();
-                    if (request.getEmail() != null) {
-                        updateEmail = updateEmail(request, user);
-                    }
-                    return updateUsername.then(updateEmail).thenReturn(user);
-                })
+                .flatMap(user -> updateUserFields(request, user))
                 .flatMap(userRepository::save)
                 .zipWith(principalMono, (user, principal) -> UserWithToken.fromUser(user, principal.token()));
+    }
+
+    private Mono<User> updateUserFields(UpdateUserRequest request, User user) {
+        doIfPresent(request.getBio(), user::setBio);
+        doIfPresent(request.getImage(), user::setImage);
+        doIfPresent(request.getPassword(), () -> updatePassword(request, user));
+        Mono<?> updateUsername = updateUsername(request, user);
+        Mono<?> updateEmail = updateEmail(request, user);
+        return updateUsername.then(updateEmail).thenReturn(user);
     }
 
     private void updatePassword(UpdateUserRequest request, User user) {
@@ -101,6 +93,9 @@ public class UserService {
     }
 
     private Mono<Boolean> updateUsername(UpdateUserRequest request, User user) {
+        if (request.getUsername() == null) {
+            return Mono.empty();
+        }
         return userRepository.existsByUsername(request.getUsername())
                 .doOnNext(existsByUsername -> {
                     if (existsByUsername) {
@@ -111,6 +106,9 @@ public class UserService {
     }
 
     private Mono<Boolean> updateEmail(UpdateUserRequest request, User user) {
+        if (request.getEmail() == null) {
+            return Mono.empty();
+        }
         return userRepository.existsByEmail(request.getEmail())
                 .doOnNext(existsByEmail -> {
                     if (existsByEmail) {
