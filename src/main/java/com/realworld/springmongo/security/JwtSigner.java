@@ -1,5 +1,6 @@
 package com.realworld.springmongo.security;
 
+import com.realworld.springmongo.user.UserTokenProvider;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,7 @@ import java.util.Date;
 
 @Component
 @RequiredArgsConstructor
-public class JwtSigner {
+public class JwtSigner implements UserTokenProvider {
 
     private final KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
     private final JwtParser jwtParser = Jwts.parserBuilder()
@@ -34,5 +35,10 @@ public class JwtSigner {
     private Date expirationDate() {
         var expirationDate = System.currentTimeMillis() + jwtProperties.getSessionTime() * 1000L;
         return new Date(expirationDate);
+    }
+
+    @Override
+    public String getToken(String userId) {
+        return generateToken(userId);
     }
 }

@@ -1,6 +1,5 @@
 package com.realworld.springmongo.security;
 
-import com.realworld.springmongo.user.UserTokenProvider;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,13 +52,5 @@ public class JwtConfig {
         var authenticationWebFilter = new AuthenticationWebFilter(manager);
         authenticationWebFilter.setServerAuthenticationConverter(converter);
         return authenticationWebFilter;
-    }
-
-    @Bean
-    UserTokenProvider userTokenProvider(TokenFormatter formatter, JwtSigner tokenService) {
-        return userId -> {
-            var token = tokenService.generateToken(userId);
-            return formatter.formatToken(token);
-        };
     }
 }

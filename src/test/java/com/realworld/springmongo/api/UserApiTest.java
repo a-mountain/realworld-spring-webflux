@@ -16,7 +16,7 @@ import java.util.Objects;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class UserApiIT {
+class UserApiTest {
 
     @Autowired
     WebTestClient client;
@@ -42,7 +42,7 @@ class UserApiIT {
         assertThat(body.getEmail()).isEqualTo(userRegistrationRequest.getEmail());
         assertThat(body.getBio()).isEmpty();
         assertThat(body.getImage()).isNull();
-        assertThat(body.getToken()).contains("Token ");
+        assertThat(body.getToken()).isNotEmpty();
     }
 
     @Test
@@ -61,7 +61,7 @@ class UserApiIT {
         assertThat(result.getEmail()).isEqualTo(userRegistrationRequest.getEmail());
         assertThat(result.getBio()).isEmpty();
         assertThat(result.getImage()).isNull();
-        assertThat(result.getToken()).contains("Token ");
+        assertThat(result.getToken()).isNotEmpty();
     }
 
     private WebTestClient.ResponseSpec signup(UserRegistrationRequest userRegistrationRequest) {

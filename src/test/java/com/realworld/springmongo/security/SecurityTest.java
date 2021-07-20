@@ -28,6 +28,9 @@ public class SecurityTest {
     @Autowired
     UserTokenProvider tokenProvider;
 
+    @Autowired
+    TokenFormatter tokenFormatter;
+
     @Test
     void shouldReturn201() {
         var status = client.get()
@@ -67,7 +70,8 @@ public class SecurityTest {
     }
 
     private String getToken(String userId) {
-        return tokenProvider.getToken(userId);
+        var token = tokenProvider.getToken(userId);
+        return tokenFormatter.formatToken(token);
     }
 
     @TestConfiguration
