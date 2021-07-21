@@ -21,13 +21,13 @@ public class UserService {
         return userRepository.existsByEmail(request.getEmail())
                 .flatMap(existsByEmail -> {
                     if (existsByEmail) {
-                        return Mono.error(new InvalidRequestException("Email", "already in use"));
+                        return Mono.error(emailAlreadyInUseException());
                     }
                     return userRepository.existsByUsername(request.getUsername());
                 })
                 .flatMap(existsByUsername -> {
                     if (existsByUsername) {
-                        return Mono.error(new InvalidRequestException("Username", "already in use"));
+                        return Mono.error(usernameAlreadyInUseException());
                     }
                     return registerNewUser(request);
                 });
@@ -99,7 +99,7 @@ public class UserService {
         return userRepository.existsByUsername(request.getUsername())
                 .doOnNext(existsByUsername -> {
                     if (existsByUsername) {
-                        throw new InvalidRequestException("Username", "already in use");
+                        throw usernameAlreadyInUseException();
                     }
                     user.setUsername(request.getUsername());
                 });
@@ -112,9 +112,17 @@ public class UserService {
         return userRepository.existsByEmail(request.getEmail())
                 .doOnNext(existsByEmail -> {
                     if (existsByEmail) {
-                        throw new InvalidRequestException("Email", "already in use");
+                        throw emailAlreadyInUseException();
                     }
                     user.setEmail(request.getEmail());
                 });
+    }
+
+    private InvalidRequestException usernameAlreadyInUseException() {
+        return new InvalidRequestException("Username", "already in use");
+    }
+
+    private InvalidRequestException emailAlreadyInUseException() {
+        return new InvalidRequestException("Email", "already in use");
     }
 }

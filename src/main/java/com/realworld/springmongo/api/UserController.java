@@ -8,6 +8,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -17,13 +19,13 @@ public class UserController {
 
     @PostMapping("/users/login")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<UserWithToken> login(@RequestBody UserAuthenticationRequest request) {
+    public Mono<UserWithToken> login(@RequestBody @Valid UserAuthenticationRequest request) {
         return userService.login(request);
     }
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<UserWithToken> signup(@RequestBody UserRegistrationRequest request) {
+    public Mono<UserWithToken> signup(@RequestBody @Valid UserRegistrationRequest request) {
         return userService.signup(request);
     }
 
@@ -33,7 +35,7 @@ public class UserController {
     }
 
     @PutMapping("/user")
-    public Mono<UserWithToken> updateUser(@RequestBody UpdateUserRequest request, @AuthenticationPrincipal Mono<TokenPrincipal> principal) {
+    public Mono<UserWithToken> updateUser(@RequestBody @Valid UpdateUserRequest request, @AuthenticationPrincipal Mono<TokenPrincipal> principal) {
         return userService.updateUser(request, principal);
     }
 }

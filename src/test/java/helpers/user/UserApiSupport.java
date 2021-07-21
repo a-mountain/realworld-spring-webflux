@@ -17,12 +17,16 @@ public class UserApiSupport {
     }
 
     public EntityExchangeResult<UserWithToken> updateUser(String token, UpdateUserRequest updateUserRequest) {
+        return updateUser(token, updateUserRequest, UserWithToken.class);
+    }
+
+    public <T> EntityExchangeResult<T> updateUser(String token, UpdateUserRequest updateUserRequest, Class<T> bodyType) {
         return client.put()
                 .uri("/api/user")
                 .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(token))
                 .bodyValue(updateUserRequest)
                 .exchange()
-                .expectBody(UserWithToken.class)
+                .expectBody(bodyType)
                 .returnResult();
     }
 
