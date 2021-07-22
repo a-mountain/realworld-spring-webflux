@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
 
 @Data
 @Accessors(chain = true)
@@ -26,6 +27,7 @@ public class UserRegistrationRequest {
                 .encodedPassword(encodedPassword)
                 .email(email)
                 .username(username)
+                .followeeIds(new ArrayList<>())
                 .build();
     }
 }

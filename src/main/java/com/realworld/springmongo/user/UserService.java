@@ -5,10 +5,13 @@ import com.realworld.springmongo.security.TokenPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
+import java.util.List;
 import java.util.UUID;
 
 import static com.realworld.springmongo.helpers.Helpers.doIfPresent;
+import static java.util.function.Function.identity;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +19,32 @@ public class UserService {
     private final UserTokenProvider tokenProvider;
     private final PasswordService passwordService;
     private final UserRepository userRepository;
+
+    public Mono<ProfileDto> getProfile(String followeeUsername, String followerUserId) {
+        return userRepository.existsByUsername(followeeUsername)
+                .flatMap(existsByUsername -> {
+                    if (!existsByUsername) {
+                        return Mono.error(usernameNotFoundException());
+                    }
+                    return findProfile(followeeUsername, followerUserId);
+                });
+    }
+
+    private Mono<ProfileDto> findProfile(String followeeUsername, String followerUserId) {
+        return userRepository.findByUsername(followeeUsername)
+                .flatMap(user -> {
+                    var profiledFollowed = isProfiledFollowed(followerUserId, user.getId());
+                    return profiledFollowed.map(isProfiledFollowed -> Tuples.of(user, isProfiledFollowed));
+                })
+                .map(tuple -> ProfileDto.fromUser(tuple.getT1(), tuple.getT2()));
+    }
+
+    private Mono<Boolean> isProfiledFollowed(String followerId, String followeeId) {
+        if (followerId.isEmpty()) {
+            return Mono.just(false);
+        }
+        return userRepository.existsByIdAndFolloweeIdsContains(followerId, List.of(followeeId));
+    }
 
     public Mono<UserWithToken> signup(UserRegistrationRequest request) {
         return userRepository.existsByEmail(request.getEmail())
@@ -118,11 +147,45 @@ public class UserService {
                 });
     }
 
+    public Mono<ProfileDto> follow(String username, String followerId) {
+        var followeeMono = userRepository.findByUsername(username)
+                .switchIfEmpty(Mono.error(usernameNotFoundException()));
+        var followerMono = userRepository.findById(followerId);
+        return followeeMono
+                .zipWith(followerMono, this::followUser)
+                .flatMap(identity())
+                .map(user -> ProfileDto.fromUser(user, true));
+    }
+
+    private Mono<User> followUser(User user, User follower) {
+        follower.followeeIds.add(user.getId());
+        return userRepository.save(follower).thenReturn(user);
+    }
+
+    public Mono<ProfileDto> unfollow(String username, String followerId) {
+        var followeeMono = userRepository.findByUsername(username)
+                .switchIfEmpty(Mono.error(usernameNotFoundException()));
+        var followerMono = userRepository.findById(followerId);
+        return followeeMono
+                .zipWith(followerMono, this::unfollowUser)
+                .flatMap(identity())
+                .map(user -> ProfileDto.fromUser(user, false));
+    }
+
+    private Mono<User> unfollowUser(User user, User follower) {
+        follower.followeeIds.remove(user.getId());
+        return userRepository.save(follower).thenReturn(user);
+    }
+
     private InvalidRequestException usernameAlreadyInUseException() {
         return new InvalidRequestException("Username", "already in use");
     }
 
     private InvalidRequestException emailAlreadyInUseException() {
         return new InvalidRequestException("Email", "already in use");
+    }
+
+    private InvalidRequestException usernameNotFoundException() {
+        return new InvalidRequestException("Username", "not found");
     }
 }

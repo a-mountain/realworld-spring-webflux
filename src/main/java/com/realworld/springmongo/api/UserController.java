@@ -38,4 +38,23 @@ public class UserController {
     public Mono<UserWithToken> updateUser(@RequestBody @Valid UpdateUserRequest request, @AuthenticationPrincipal Mono<TokenPrincipal> principal) {
         return userService.updateUser(request, principal);
     }
+
+    @GetMapping("/profiles/{username}")
+    public Mono<ProfileDto> getProfile(@PathVariable String username, @AuthenticationPrincipal Mono<TokenPrincipal> principalMono) {
+        if (principalMono == null) {
+            return userService.getProfile(username, "");
+        }
+        return principalMono.flatMap(principal -> userService.getProfile(username, principal.userId()));
+    }
+
+    @PostMapping("/profiles/{username}/follow")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<ProfileDto> follow(@PathVariable String username, @AuthenticationPrincipal Mono<TokenPrincipal> tokenPrincipal) {
+        return tokenPrincipal.flatMap(principal -> userService.follow(username, principal.userId()));
+    }
+
+    @DeleteMapping("/profiles/{username}/follow")
+    public Mono<ProfileDto> unfollow(@PathVariable String username, @AuthenticationPrincipal Mono<TokenPrincipal> tokenPrincipal) {
+        return tokenPrincipal.flatMap(principal -> userService.unfollow(username, principal.userId()));
+    }
 }

@@ -1,9 +1,6 @@
 package helpers.user;
 
-import com.realworld.springmongo.user.UpdateUserRequest;
-import com.realworld.springmongo.user.UserAuthenticationRequest;
-import com.realworld.springmongo.user.UserRegistrationRequest;
-import com.realworld.springmongo.user.UserWithToken;
+import com.realworld.springmongo.user.*;
 import helpers.TokenHelper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
@@ -54,6 +51,42 @@ public class UserApiSupport {
                 .bodyValue(userAuthenticationRequest)
                 .exchange()
                 .expectBody(UserWithToken.class)
+                .returnResult();
+    }
+
+    public EntityExchangeResult<ProfileDto> getProfile(String username) {
+        return client.get()
+                .uri("/api/profiles/" + username)
+                .exchange()
+                .expectBody(ProfileDto.class)
+                .returnResult();
+    }
+
+    public EntityExchangeResult<ProfileDto> getProfile(String username, String token) {
+        return client.get()
+                .uri("/api/profiles/" + username)
+                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(token))
+                .exchange()
+                .expectBody(ProfileDto.class)
+                .returnResult();
+    }
+
+
+    public EntityExchangeResult<ProfileDto> follow(String username, String token) {
+        return client.post()
+                .uri("/api/profiles/" + username + "/follow")
+                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(token))
+                .exchange()
+                .expectBody(ProfileDto.class)
+                .returnResult();
+    }
+
+    public EntityExchangeResult<ProfileDto> unfollow(String followeeUsername, String authToken) {
+        return client.delete()
+                .uri("/api/profiles/" + followeeUsername + "/follow")
+                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
+                .exchange()
+                .expectBody(ProfileDto.class)
                 .returnResult();
     }
 }

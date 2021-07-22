@@ -2,6 +2,7 @@ package helpers.user;
 
 import com.realworld.springmongo.user.*;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class UserSamples {
@@ -30,7 +31,10 @@ public class UserSamples {
                 .id(SAMPLE_USER_ID)
                 .username(SAMPLE_USERNAME)
                 .email(SAMPLE_EMAIL)
-                .encodedPassword(encodePassword);
+                .encodedPassword(encodePassword)
+                .image("test image url")
+                .bio("test bio")
+                .followeeIds(new ArrayList<>());
     }
 
     public static UpdateUserRequest sampleUpdateUserRequest() {
