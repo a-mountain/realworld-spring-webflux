@@ -15,6 +15,7 @@ public class UserAuthenticationRequest {
     @Email
     @NotBlank
     String email;
+
     @NotBlank
     String password;
 }

@@ -15,9 +15,11 @@ import java.util.ArrayList;
 public class UserRegistrationRequest {
     @NotBlank
     String username;
+
     @Email
     @NotBlank
     String email;
+
     @NotBlank
     String password;
 

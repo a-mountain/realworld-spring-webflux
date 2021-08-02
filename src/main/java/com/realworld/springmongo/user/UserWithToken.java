@@ -10,9 +10,13 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserWithToken {
     String email;
+
     String token;
+
     String username;
+
     String bio;
+
     String image;
 
     public static UserWithToken fromUser(User savedUser, String token) {

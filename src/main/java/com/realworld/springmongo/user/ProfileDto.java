@@ -10,8 +10,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProfileDto {
     String username;
+
     String bio;
+
     String image;
+
     boolean following;
 
     public static ProfileDto fromUser(User user, boolean following) {

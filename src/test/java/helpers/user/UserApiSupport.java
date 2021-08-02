@@ -71,7 +71,6 @@ public class UserApiSupport {
                 .returnResult();
     }
 
-
     public EntityExchangeResult<ProfileDto> follow(String username, String token) {
         return client.post()
                 .uri("/api/profiles/" + username + "/follow")

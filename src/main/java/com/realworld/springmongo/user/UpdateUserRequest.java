@@ -15,10 +15,14 @@ public class UpdateUserRequest {
     @Email
     @NotBlankOrNull
     String email;
+
     @NotBlankOrNull
     String username;
+
     @NotBlankOrNull
     String password;
+
     String image;
+
     String bio;
 }
