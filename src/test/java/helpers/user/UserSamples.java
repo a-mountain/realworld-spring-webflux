@@ -39,7 +39,7 @@ public class UserSamples {
                 .encodedPassword(encodePassword)
                 .image("test image url")
                 .bio("test bio")
-                .followeeIds(new ArrayList<>());
+                .followingIds(new ArrayList<>());
     }
 
     public static User.UserBuilder sampleUser() {

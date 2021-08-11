@@ -19,21 +19,29 @@ public class ArticleManualRepositoryImpl implements ArticleManualRepository {
     private final ReactiveMongoTemplate mongoTemplate;
 
     @Override
-    public Flux<Article> findArticles(@Nullable String tag, @Nullable String authorId, @Nullable User favoritedBy, int limit, int offset) {
+    public Flux<Article> findMostRecentArticlesFilteredBy(@Nullable String tag, @Nullable String authorId, @Nullable User favoritedBy, int limit, int offset) {
         var query = new Query()
                 .skip(offset)
                 .limit(limit)
-                .with(Sort.by("createdAt"));
+                .with(ArticleRepository.MOST_RECENT_SORT);
         ofNullable(favoritedBy)
                 .ifPresent(user -> query.addCriteria(isFavoriteArticleByUser(user)));
         ofNullable(tag)
-                .ifPresent(it -> query.addCriteria(where("tags").all(it)));
+                .ifPresent(it -> query.addCriteria(tagsContains(it)));
         ofNullable(authorId)
-                .ifPresent(it -> query.addCriteria(where("authorId").is(it)));
+                .ifPresent(it -> query.addCriteria(authorIdEquals(it)));
         return mongoTemplate.find(query, Article.class);
     }
 
+    private Criteria authorIdEquals(String it) {
+        return where(Article.AUTHOR_ID).is(it);
+    }
+
+    private Criteria tagsContains(String it) {
+        return where(Article.TAGS).all(it);
+    }
+
     private Criteria isFavoriteArticleByUser(User it) {
-        return where("id").in(it.getFavoriteArticleIds());
+        return where(Article.ID).in(it.getFavoriteArticleIds());
     }
 }

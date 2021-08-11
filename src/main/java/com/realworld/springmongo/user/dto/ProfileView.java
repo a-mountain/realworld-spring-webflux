@@ -35,6 +35,6 @@ public class ProfileView {
     }
 
     public static ProfileView profileViewForViewer(User userToMakeView, User viewer) {
-        return profileViewOf(userToMakeView, userToMakeView.isFollowedBy(viewer));
+        return profileViewOf(userToMakeView, userToMakeView.isFollower(viewer));
     }
 }

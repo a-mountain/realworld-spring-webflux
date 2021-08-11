@@ -12,7 +12,5 @@ public interface UserRepository extends ReactiveMongoRepository<User, String> {
 
     Mono<Boolean> existsByUsername(String username);
 
-    Mono<Boolean> existsByIdAndFolloweeIdsContains(String id, List<String> followeeIds);
-
     Mono<User> findByUsername(String username);
 }

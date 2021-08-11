@@ -1,14 +1,14 @@
-package com.realworld.springmongo.article;
+package com.realworld.springmongo.article.repository;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-public class OffsetBasedPageRequest implements Pageable {
+public class OffsetBasedPageable implements Pageable {
     private final int limit;
     private final int offset;
     private final Sort sort;
 
-    private OffsetBasedPageRequest(int limit, int offset, Sort sort) {
+    private OffsetBasedPageable(int limit, int offset, Sort sort) {
         if (limit < 1) {
             throw new IllegalArgumentException("Limit must not be less than one");
         }
@@ -21,7 +21,11 @@ public class OffsetBasedPageRequest implements Pageable {
     }
 
     public static Pageable of(int limit, int offset) {
-        return new OffsetBasedPageRequest(limit, offset, Sort.unsorted());
+        return new OffsetBasedPageable(limit, offset, Sort.unsorted());
+    }
+
+    public static Pageable of(int limit, int offset, Sort sort) {
+        return new OffsetBasedPageable(limit, offset, sort);
     }
 
     @Override
@@ -70,6 +74,6 @@ public class OffsetBasedPageRequest implements Pageable {
     }
 
     private UnsupportedOperationException unsupportedOperation() {
-        return new UnsupportedOperationException("OffsetBasedPageRequest has no pages. Contains only offset and page size");
+        return new UnsupportedOperationException("OffsetBasedPageable has no pages. Contains only offset and page size");
     }
 }

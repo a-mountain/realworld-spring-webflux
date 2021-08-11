@@ -19,7 +19,7 @@ public class User {
 
     @Getter
     @Setter
-    List<String> followeeIds;
+    List<String> followingIds;
 
     @Getter
     @Setter
@@ -46,11 +46,11 @@ public class User {
     private List<String> favoriteArticleIds;
 
     public void follow(String userId) {
-        followeeIds.add(userId);
+        followingIds.add(userId);
     }
 
     public void unfollow(String userId) {
-        followeeIds.remove(userId);
+        followingIds.remove(userId);
     }
 
     public void follow(User user) {
@@ -65,11 +65,11 @@ public class User {
         return favoriteArticleIds.contains(article.getId());
     }
 
-    public boolean isFollowee(User user) {
-        return followeeIds.contains(user.getId());
+    public boolean isFollowing(User user) {
+        return followingIds.contains(user.getId());
     }
 
-    public boolean isFollowedBy(User user) {
-        return user.isFollowee(this);
+    public boolean isFollower(User user) {
+        return user.isFollowing(this);
     }
 }

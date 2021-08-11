@@ -2,7 +2,7 @@ package com.realworld.springmongo.article;
 
 import com.realworld.springmongo.article.dto.ArticleView;
 import com.realworld.springmongo.article.dto.CreateArticleRequest;
-import com.realworld.springmongo.article.dto.MultipleArticlesDto;
+import com.realworld.springmongo.article.dto.MultipleArticlesView;
 import com.realworld.springmongo.article.repository.ArticleRepository;
 import com.realworld.springmongo.user.User;
 import com.realworld.springmongo.user.UserRepository;
@@ -12,6 +12,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.UUID;
 
 import static com.realworld.springmongo.user.dto.ProfileView.profileViewForViewer;
@@ -35,15 +36,24 @@ public class ArticleService {
                 });
     }
 
-    public Mono<MultipleArticlesDto> findArticles(String tag, String author, String favoritedByUser, int offset, int limit, @Nullable User currentUser) {
-        return createFindArticleRequest(tag, author, favoritedByUser, offset, limit)
-                .flatMapMany(articleRepository::findArticles)
-                .flatMap(article -> currentUser != null ? getArticleViewForUser(article, currentUser) : getArticleView(article))
+    public Mono<MultipleArticlesView> feed(int offset, int limit, User currentUser) {
+        var followingAuthorIds = currentUser.getFollowingIds();
+        return articleRepository
+                .findMostRecentArticlesByAuthorIds(followingAuthorIds, offset, limit)
+                .flatMap(article -> getArticleViewForUser(article, currentUser))
                 .collectList()
-                .map(MultipleArticlesDto::of);
+                .map(MultipleArticlesView::of);
     }
 
-    public Mono<MultipleArticlesDto> findArticles(String tag, String author, String favoritedByUser, int offset, int limit) {
+    public Mono<MultipleArticlesView> findArticles(String tag, String author, String favoritedByUser, int offset, int limit, @Nullable User currentUser) {
+        return createFindArticleRequest(tag, author, favoritedByUser, offset, limit)
+                .flatMapMany(articleRepository::findMostRecentArticlesFilteredBy)
+                .flatMap(article -> currentUser != null ? getArticleViewForUser(article, currentUser) : getArticleView(article))
+                .collectList()
+                .map(MultipleArticlesView::of);
+    }
+
+    public Mono<MultipleArticlesView> findArticles(String tag, String author, String favoritedByUser, int offset, int limit) {
         return findArticles(tag, author, favoritedByUser, offset, limit, null);
     }
 

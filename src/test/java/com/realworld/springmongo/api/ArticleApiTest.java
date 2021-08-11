@@ -2,10 +2,13 @@ package com.realworld.springmongo.api;
 
 import com.realworld.springmongo.article.dto.ArticleView;
 import com.realworld.springmongo.article.dto.CreateArticleRequest;
+import com.realworld.springmongo.article.dto.MultipleArticlesView;
 import com.realworld.springmongo.article.repository.ArticleRepository;
 import com.realworld.springmongo.user.UserRepository;
 import com.realworld.springmongo.user.dto.ProfileView;
+import com.realworld.springmongo.user.dto.UserRegistrationRequest;
 import com.realworld.springmongo.user.dto.UserView;
+import helpers.TokenHelper;
 import helpers.article.ArticleApiSupport;
 import helpers.article.ArticleSamples;
 import helpers.article.FindArticlesRequest;
@@ -15,6 +18,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.time.Instant;
@@ -92,6 +97,38 @@ public class ArticleApiTest {
                 .usingRecursiveComparison()
                 .ignoringFieldsOfTypes(Instant.class)
                 .isEqualTo(preparation.articles.get(1));
+    }
+
+    @Test
+    void shouldReturnFeed() {
+        var follower = userApi.signup();
+        var followingUserRR = UserSamples.sampleUserRegistrationRequest()
+                .setUsername("following username")
+                .setEmail("following@gmail.com");
+        var followingUser = userApi.signup(followingUserRR).getResponseBody();
+        assert followingUser != null;
+
+        userApi.follow(followingUser.getUsername(), follower.getToken());
+
+        articleApi.createArticle(ArticleSamples.sampleCreateArticleRequest(), followingUser.getToken());
+        articleApi.createArticle(ArticleSamples.sampleCreateArticleRequest(), followingUser.getToken());
+        articleApi.createArticle(ArticleSamples.sampleCreateArticleRequest(), followingUser.getToken());
+
+        articleApi.createArticle(ArticleSamples.sampleCreateArticleRequest(), follower.getToken());
+
+        var result = client.get()
+                .uri("/api/articles/feed?offset=1&limit=2")
+                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(follower.getToken()))
+                .exchange()
+                .expectBody(MultipleArticlesView.class)
+                .returnResult();
+        var resultBody = result.getResponseBody();
+        assert resultBody != null;
+        assertThat(resultBody.getArticlesCount()).isEqualTo(2);
+        var hasRightAuthor = resultBody.getArticles().stream()
+                .map(ArticleView::getAuthor)
+                .allMatch(it -> it.getUsername().equals(followingUser.getUsername()));
+        assertThat(hasRightAuthor).isTrue();
     }
 
     ArticlesAndUsers create2UsersAnd3Articles(String tag) {

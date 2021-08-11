@@ -170,7 +170,7 @@ class UserApiTest {
         var followee = userRepository.findByUsername(followeeRegistrationRequest.getUsername()).block();
         assert follower != null;
         assert followee != null;
-        assertThat(follower.getFolloweeIds()).doesNotContain(followee.getId());
+        assertThat(follower.getFollowingIds()).doesNotContain(followee.getId());
     }
 
     private UserView prepareFollowerAndFollowee(UserRegistrationRequest followeeRegistrationRequest, UserRegistrationRequest followerRegistrationRequest) {
@@ -188,7 +188,7 @@ class UserApiTest {
         var followee = userRepository.findByUsername(followeeRequest.getUsername()).block();
         assert follower != null;
         assert followee != null;
-        assertThat(follower.getFolloweeIds()).contains(followee.getId());
+        assertThat(follower.getFollowingIds()).contains(followee.getId());
     }
 
     private void assertThatUserIsSavedAfterUpdate(UpdateUserRequest updateUserRequest) {

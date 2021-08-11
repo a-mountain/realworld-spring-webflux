@@ -33,7 +33,6 @@ public class ArticleSamples {
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .authorId(UserSamples.SAMPLE_USER_ID)
-                .favoritesCount(0)
-                .slug("");
+                .favoritesCount(0);
     }
 }

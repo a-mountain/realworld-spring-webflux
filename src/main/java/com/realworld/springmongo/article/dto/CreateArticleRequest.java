@@ -34,7 +34,7 @@ public class CreateArticleRequest {
                 .title(title)
                 .body(body)
                 .tags(tagList)
-                .slug("")
+                .favoritesCount(0)
                 .updatedAt(Instant.now())
                 .createdAt(Instant.now())
                 .build();

@@ -10,12 +10,12 @@ import java.util.List;
 @Data
 @Accessors(chain = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MultipleArticlesDto {
+public class MultipleArticlesView {
     List<ArticleView> articles;
     int articlesCount;
 
-    public static MultipleArticlesDto of(List<ArticleView> articles) {
-        return new MultipleArticlesDto()
+    public static MultipleArticlesView of(List<ArticleView> articles) {
+        return new MultipleArticlesView()
                 .setArticles(articles)
                 .setArticlesCount(articles.size());
     }

@@ -2,7 +2,7 @@ package helpers.article;
 
 import com.realworld.springmongo.article.dto.ArticleView;
 import com.realworld.springmongo.article.dto.CreateArticleRequest;
-import com.realworld.springmongo.article.dto.MultipleArticlesDto;
+import com.realworld.springmongo.article.dto.MultipleArticlesView;
 import helpers.TokenHelper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
@@ -28,7 +28,7 @@ public class ArticleApiSupport {
     }
 
 
-    public EntityExchangeResult<MultipleArticlesDto> findArticles(FindArticlesRequest request, String authToken) {
+    public EntityExchangeResult<MultipleArticlesView> findArticles(FindArticlesRequest request, String authToken) {
         var requestSpec = client
                 .get()
                 .uri(builder -> builder
@@ -43,11 +43,11 @@ public class ArticleApiSupport {
         }
         return requestSpec
                 .exchange()
-                .expectBody(MultipleArticlesDto.class)
+                .expectBody(MultipleArticlesView.class)
                 .returnResult();
     }
 
-    public EntityExchangeResult<MultipleArticlesDto> findArticles(FindArticlesRequest request) {
+    public EntityExchangeResult<MultipleArticlesView> findArticles(FindArticlesRequest request) {
         return findArticles(request, null);
     }
 }

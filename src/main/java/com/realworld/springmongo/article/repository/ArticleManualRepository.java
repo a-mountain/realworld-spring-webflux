@@ -7,9 +7,9 @@ import org.springframework.lang.Nullable;
 import reactor.core.publisher.Flux;
 
 public interface ArticleManualRepository {
-    Flux<Article> findArticles(@Nullable String tag, @Nullable String authorId, @Nullable User favoritedBy, int limit, int offset);
+    Flux<Article> findMostRecentArticlesFilteredBy(@Nullable String tag, @Nullable String authorId, @Nullable User favoritedBy, int limit, int offset);
 
-    default Flux<Article> findArticles(FindArticlesRequest request) {
-        return findArticles(request.getTag(), request.getAuthorId(), request.getFavoritedBy(), request.getLimit(), request.getOffset());
+    default Flux<Article> findMostRecentArticlesFilteredBy(FindArticlesRequest request) {
+        return findMostRecentArticlesFilteredBy(request.getTag(), request.getAuthorId(), request.getFavoritedBy(), request.getLimit(), request.getOffset());
     }
 }
