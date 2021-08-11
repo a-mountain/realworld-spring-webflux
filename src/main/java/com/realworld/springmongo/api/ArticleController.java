@@ -1,10 +1,7 @@
 package com.realworld.springmongo.api;
 
 import com.realworld.springmongo.article.ArticleService;
-import com.realworld.springmongo.article.dto.ArticleView;
-import com.realworld.springmongo.article.dto.CreateArticleRequest;
-import com.realworld.springmongo.article.dto.MultipleArticlesView;
-import com.realworld.springmongo.article.dto.UpdateArticleRequest;
+import com.realworld.springmongo.article.dto.*;
 import com.realworld.springmongo.security.TokenPrincipal;
 import com.realworld.springmongo.user.UserContext;
 import lombok.RequiredArgsConstructor;
@@ -67,5 +64,18 @@ public class ArticleController {
     @DeleteMapping("/articles/{slug}")
     public Mono<Void> deleteArticle(@PathVariable String slug) {
         return articleService.deleteArticle(slug);
+    }
+
+    @PostMapping("/articles/{slug}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<CommentView> addComment(@PathVariable String slug, @RequestBody CreateCommentRequest request) {
+        return userContext.getCurrentUserOrEmpty()
+                .flatMap(currentUser -> articleService.addComment(slug, request, currentUser));
+    }
+
+    @DeleteMapping("/articles/{slug}/comments/{commentId}")
+    public Mono<Void> deleteComment(@PathVariable String commentId, @PathVariable String slug) {
+        return userContext.getCurrentUserOrEmpty()
+                .flatMap(currentUser -> articleService.deleteComment(commentId, slug, currentUser));
     }
 }

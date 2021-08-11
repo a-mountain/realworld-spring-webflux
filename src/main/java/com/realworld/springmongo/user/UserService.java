@@ -16,12 +16,12 @@ public class UserService {
 
     public Mono<ProfileView> getProfile(String profileUsername, User viewer) {
         return findUserByUsernameOrError(profileUsername)
-                .map(user -> ProfileView.profileViewForViewer(user, viewer));
+                .map(user -> ProfileView.toProfileViewForViewer(user, viewer));
     }
 
     public Mono<ProfileView> getProfile(String profileUsername) {
         return findUserByUsernameOrError(profileUsername)
-                .map(user -> ProfileView.profileViewOf(user, false));
+                .map(user -> ProfileView.toProfileView(user, false));
     }
 
     public Mono<UserView> signup(UserRegistrationRequest request) {
@@ -51,7 +51,7 @@ public class UserService {
                     follower.follow(userToFollow);
                     return userRepository.save(follower).thenReturn(userToFollow);
                 })
-                .map(ProfileView::followedProfileViewOf);
+                .map(ProfileView::toFollowedProfileViewOf);
     }
 
     public Mono<ProfileView> unfollow(String username, User follower) {
@@ -60,7 +60,7 @@ public class UserService {
                     follower.unfollow(userToUnfollow);
                     return userRepository.save(follower).thenReturn(userToUnfollow);
                 })
-                .map(ProfileView::unfollowedProfileView);
+                .map(ProfileView::toUnfollowedProfileView);
     }
 
     private Mono<User> findUserByUsernameOrError(String username) {

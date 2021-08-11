@@ -1,9 +1,6 @@
 package helpers.article;
 
-import com.realworld.springmongo.article.dto.ArticleView;
-import com.realworld.springmongo.article.dto.CreateArticleRequest;
-import com.realworld.springmongo.article.dto.MultipleArticlesView;
-import com.realworld.springmongo.article.dto.UpdateArticleRequest;
+import com.realworld.springmongo.article.dto.*;
 import helpers.TokenHelper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
@@ -83,10 +80,48 @@ public class ArticleApiSupport {
                 .returnResult();
     }
 
-    public void deleteArticle(String slug, String authToken) {
-        client.delete()
+    public EntityExchangeResult<CommentView> addComment(String articleSlug, CreateCommentRequest request, String authToken) {
+        return client.post()
+                .uri("/api/articles/" + articleSlug + "/comments")
+                .bodyValue(request)
+                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
+                .exchange()
+                .expectBody(CommentView.class)
+                .returnResult();
+    }
+
+    public EntityExchangeResult<Void> deleteComment(String articleSlug, String commentId, String authToken) {
+        return client.delete()
+                .uri("/api/articles/" + articleSlug + "/comments/" + commentId)
+                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
+                .exchange()
+                .expectBody(Void.class)
+                .returnResult();
+    }
+
+    public EntityExchangeResult<Void> deleteArticle(String slug, String authToken) {
+        return client.delete()
                 .uri("/api/articles/" + slug)
                 .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
-                .exchange();
+                .exchange()
+                .expectBody(Void.class)
+                .returnResult();
+    }
+
+    public EntityExchangeResult<MultipleCommentsView> getComments(String articleSlug, String authToken) {
+        return client.get()
+                .uri("/api/articles/" + articleSlug + "/comments")
+                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
+                .exchange()
+                .expectBody(MultipleCommentsView.class)
+                .returnResult();
+    }
+
+    public EntityExchangeResult<MultipleCommentsView> getComments(String articleSlug) {
+        return client.get()
+                .uri("/api/articles/" + articleSlug + "/comments")
+                .exchange()
+                .expectBody(MultipleCommentsView.class)
+                .returnResult();
     }
 }

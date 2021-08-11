@@ -20,6 +20,7 @@ public class SecurityConfig {
                 .and()
                 .addFilterAt(webFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .httpBasic().disable()
+                .cors().disable()
                 .csrf().disable()
                 .formLogin().disable()
                 .logout().disable()

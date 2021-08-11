@@ -1,9 +1,6 @@
 package com.realworld.springmongo.article;
 
-import com.realworld.springmongo.article.dto.ArticleView;
-import com.realworld.springmongo.article.dto.CreateArticleRequest;
-import com.realworld.springmongo.article.dto.MultipleArticlesView;
-import com.realworld.springmongo.article.dto.UpdateArticleRequest;
+import com.realworld.springmongo.article.dto.*;
 import com.realworld.springmongo.article.repository.ArticleRepository;
 import com.realworld.springmongo.exceptions.InvalidRequestException;
 import com.realworld.springmongo.user.User;
@@ -17,9 +14,9 @@ import reactor.core.publisher.Mono;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.realworld.springmongo.article.dto.ArticleView.articleViewForViewer;
-import static com.realworld.springmongo.user.dto.ProfileView.profileViewForViewer;
-import static com.realworld.springmongo.user.dto.ProfileView.unfollowedProfileView;
+import static com.realworld.springmongo.article.dto.ArticleView.toArticleViewForViewer;
+import static com.realworld.springmongo.user.dto.ProfileView.toProfileViewForViewer;
+import static com.realworld.springmongo.user.dto.ProfileView.toUnfollowedProfileView;
 import static java.util.Optional.ofNullable;
 
 @Service
@@ -35,8 +32,8 @@ public class ArticleService {
         return articleRepository
                 .save(article)
                 .zipWith(userRepository.findById(authorId), (theArticle, user) -> {
-                    var profileDto = ProfileView.unfollowedProfileView(user);
-                    return ArticleView.unfavoredArticleView(theArticle, profileDto);
+                    var profileDto = ProfileView.toUnfollowedProfileView(user);
+                    return ArticleView.toUnfavoredArticleView(theArticle, profileDto);
                 });
     }
 
@@ -75,12 +72,12 @@ public class ArticleService {
 
     private Mono<ArticleView> toArticleViewForUser(Article article, User user) {
         return userRepository.findById(article.getAuthorId())
-                .map(it -> articleViewForViewer(article, profileViewForViewer(it, user), user));
+                .map(it -> toArticleViewForViewer(article, toProfileViewForViewer(it, user), user));
     }
 
     private Mono<ArticleView> toArticleView(Article article) {
         return userRepository.findById(article.getAuthorId())
-                .map(author -> ArticleView.unfavoredArticleView(article, unfollowedProfileView(author)));
+                .map(author -> ArticleView.toUnfavoredArticleView(article, toUnfollowedProfileView(author)));
     }
 
     private Mono<String> getAuthorId(String author) {
@@ -118,11 +115,38 @@ public class ArticleService {
                             .ifPresent(article::setDescription);
                     ofNullable(request.getTitle())
                             .ifPresent(article::setTitle);
-                    return ArticleView.ownArticleView(article, currentUser);
+                    return ArticleView.toOwnArticleView(article, currentUser);
                 });
     }
 
     public Mono<Void> deleteArticle(String slug) {
         return articleRepository.deleteArticleBySlug(slug).then();
+    }
+
+    public Mono<CommentView> addComment(String slug, CreateCommentRequest request, User currentUser) {
+        return articleRepository.findBySlug(slug)
+                .switchIfEmpty(Mono.error(new InvalidRequestException("Article", "not found")))
+                .flatMap(article -> {
+                    var comment = request.toComment(UUID.randomUUID().toString(), currentUser.getId());
+                    article.addComment(comment);
+                    var profileView = CommentView.toCommentView(comment, ProfileView.toOwnProfile(currentUser));
+                    return articleRepository.save(article).thenReturn(profileView);
+                });
+    }
+
+    public Mono<Void> deleteComment(String commentId, String slug, User user) {
+        return articleRepository.findBySlug(slug)
+                .switchIfEmpty(Mono.error(new InvalidRequestException("Article", "not found")))
+                .flatMap(article -> {
+                    var comment = article.getCommentById(commentId);
+                    if (comment.isEmpty()) {
+                        return Mono.empty();
+                    }
+                    if (!comment.get().isAuthor(user)) {
+                        return Mono.error(new InvalidRequestException("Comment", "only author can delete comment"));
+                    }
+                    article.deleteComment(comment.get());
+                    return articleRepository.save(article).then();
+                });
     }
 }

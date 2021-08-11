@@ -18,7 +18,7 @@ public class ProfileView {
 
     boolean following;
 
-    public static ProfileView profileViewOf(User userToMakeView, boolean following) {
+    public static ProfileView toProfileView(User userToMakeView, boolean following) {
         return new ProfileView()
                 .setUsername(userToMakeView.getUsername())
                 .setBio(userToMakeView.getBio())
@@ -26,19 +26,19 @@ public class ProfileView {
                 .setFollowing(following);
     }
 
-    public static ProfileView unfollowedProfileView(User userToMakeView) {
-        return profileViewOf(userToMakeView, false);
+    public static ProfileView toUnfollowedProfileView(User userToMakeView) {
+        return toProfileView(userToMakeView, false);
     }
 
-    public static ProfileView followedProfileViewOf(User userToMakeView) {
-        return profileViewOf(userToMakeView, true);
+    public static ProfileView toFollowedProfileViewOf(User userToMakeView) {
+        return toProfileView(userToMakeView, true);
     }
 
-    public static ProfileView ownProfile(User user) {
-        return profileViewForViewer(user, user);
+    public static ProfileView toOwnProfile(User user) {
+        return toProfileViewForViewer(user, user);
     }
 
-    public static ProfileView profileViewForViewer(User userToMakeView, User viewer) {
-        return profileViewOf(userToMakeView, userToMakeView.isFollower(viewer));
+    public static ProfileView toProfileViewForViewer(User userToMakeView, User viewer) {
+        return toProfileView(userToMakeView, userToMakeView.isFollower(viewer));
     }
 }

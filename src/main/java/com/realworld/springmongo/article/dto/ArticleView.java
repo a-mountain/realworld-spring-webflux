@@ -35,7 +35,7 @@ public class ArticleView {
 
     ProfileView author;
 
-    public static ArticleView articleView(Article article, ProfileView author, boolean favorited) {
+    public static ArticleView toArticleView(Article article, ProfileView author, boolean favorited) {
         return new ArticleView()
                 .setSlug(article.getSlug())
                 .setTitle(article.getTitle())
@@ -49,15 +49,15 @@ public class ArticleView {
                 .setAuthor(author);
     }
 
-    public static ArticleView ownArticleView(Article article, User articleOwner) {
-        return articleViewForViewer(article, ProfileView.ownProfile(articleOwner), articleOwner);
+    public static ArticleView toOwnArticleView(Article article, User articleOwner) {
+        return toArticleViewForViewer(article, ProfileView.toOwnProfile(articleOwner), articleOwner);
     }
 
-    public static ArticleView articleViewForViewer(Article article, ProfileView author, User user) {
-        return articleView(article, author, user.isFavoriteArticle(article));
+    public static ArticleView toArticleViewForViewer(Article article, ProfileView author, User user) {
+        return toArticleView(article, author, user.isFavoriteArticle(article));
     }
 
-    public static ArticleView unfavoredArticleView(Article article, ProfileView author) {
-        return articleView(article, author, false);
+    public static ArticleView toUnfavoredArticleView(Article article, ProfileView author) {
+        return toArticleView(article, author, false);
     }
 }

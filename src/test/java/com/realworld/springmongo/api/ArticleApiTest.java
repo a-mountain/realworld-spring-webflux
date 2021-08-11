@@ -1,9 +1,8 @@
 package com.realworld.springmongo.api;
 
-import com.realworld.springmongo.article.dto.ArticleView;
-import com.realworld.springmongo.article.dto.CreateArticleRequest;
-import com.realworld.springmongo.article.dto.MultipleArticlesView;
-import com.realworld.springmongo.article.dto.UpdateArticleRequest;
+import com.realworld.springmongo.article.Article;
+import com.realworld.springmongo.article.Comment;
+import com.realworld.springmongo.article.dto.*;
 import com.realworld.springmongo.article.repository.ArticleRepository;
 import com.realworld.springmongo.user.UserRepository;
 import com.realworld.springmongo.user.dto.ProfileView;
@@ -170,6 +169,40 @@ public class ArticleApiTest {
         var articlesCount = articleRepository.count().block();
         assertThat(articlesCount).isEqualTo(0L);
     }
+
+    @Test
+    void shouldAddComment() {
+        var user = userApi.signup();
+        var article = articleApi.createArticle(ArticleSamples.sampleCreateArticleRequest(), user.getToken()).getResponseBody();
+        assert article != null;
+        var request = new CreateCommentRequest("test comment");
+        var commentView = articleApi.addComment(article.getSlug(), request, user.getToken()).getResponseBody();
+        assert commentView != null;
+
+        assertThat(commentView.getBody()).isEqualTo(request.getBody());
+        assertThat(commentView.getAuthor().getUsername()).isEqualTo(user.getUsername());
+
+        var savedArticle = articleRepository.findAll().blockFirst();
+        assert savedArticle != null;
+        assertThat(savedArticle.getComments()).isNotEmpty();
+    }
+
+    @Test
+    void shouldDeleteComment() {
+        var user = userApi.signup();
+        var article = articleApi.createArticle(ArticleSamples.sampleCreateArticleRequest(), user.getToken()).getResponseBody();
+        assert article != null;
+        var request = new CreateCommentRequest("test comment");
+        var commentView = articleApi.addComment(article.getSlug(), request, user.getToken()).getResponseBody();
+        assert commentView != null;
+
+        articleApi.deleteComment(article.getSlug(), commentView.getId(), user.getToken());
+
+        var savedArticle = articleRepository.findAll().blockFirst();
+        assert savedArticle != null;
+        assertThat(savedArticle.getComments()).isEmpty();
+    }
+
 
     ArticlesAndUsers create2UsersAnd3Articles(String tag) {
         var user1 = userApi.signup();
