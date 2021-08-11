@@ -3,7 +3,6 @@ package com.realworld.springmongo.user;
 import com.realworld.springmongo.exceptions.InvalidRequestException;
 import com.realworld.springmongo.security.JwtProperties;
 import com.realworld.springmongo.security.JwtSigner;
-import com.realworld.springmongo.security.TokenPrincipal;
 import helpers.user.UserSamples;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,9 @@ class UserServiceTest {
     static void beforeAll() {
         var signer = new JwtSigner(new JwtProperties(86000));
         UserTokenProvider tokenProvider = signer::generateToken;
-        service = new UserService(tokenProvider, passwordService, userRepository);
+        var credentialsService = new CredentialsService(userRepository, passwordService, tokenProvider);
+        var userUpdater = new UserUpdater(userRepository, passwordService);
+        service = new UserService(credentialsService, userRepository, userUpdater);
     }
 
     @Test
@@ -83,10 +84,11 @@ class UserServiceTest {
     void shouldThrowErrorWhenUpdateUserWithDuplicateEmail() {
         when(userRepository.existsByEmail(anyString())).thenReturn(Mono.just(true));
         when(userRepository.existsByUsername(anyString())).thenReturn(Mono.just(false));
-        when(userRepository.findById(anyString())).thenReturn(Mono.just(UserSamples.sampleUser(passwordService).build()));
+        var user = UserSamples.sampleUser(passwordService).build();
+        when(userRepository.findById(anyString())).thenReturn(Mono.just(user));
 
         var updateUserRequest = UserSamples.sampleUpdateUserRequest();
-        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, Mono.just(new TokenPrincipal("1", "Token"))).block());
+        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, new UserContext.UserAndToken(user, "token")).block());
 
         assertThat(throwable)
                 .isInstanceOf(InvalidRequestException.class)
@@ -97,10 +99,11 @@ class UserServiceTest {
     void shouldThrowErrorWhenUpdateUserWithDuplicateUsername() {
         when(userRepository.existsByEmail(anyString())).thenReturn(Mono.just(false));
         when(userRepository.existsByUsername(anyString())).thenReturn(Mono.just(true));
-        when(userRepository.findById(anyString())).thenReturn(Mono.just(UserSamples.sampleUser(passwordService).build()));
+        var user = UserSamples.sampleUser(passwordService).build();
+        when(userRepository.findById(anyString())).thenReturn(Mono.just(user));
 
         var updateUserRequest = UserSamples.sampleUpdateUserRequest();
-        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, Mono.just(new TokenPrincipal("1", "Token"))).block());
+        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, new UserContext.UserAndToken(user, "token")).block());
 
         assertThat(throwable)
                 .isInstanceOf(InvalidRequestException.class)

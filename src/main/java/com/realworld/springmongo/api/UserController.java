@@ -1,10 +1,10 @@
 package com.realworld.springmongo.api;
 
-import com.realworld.springmongo.security.TokenPrincipal;
-import com.realworld.springmongo.user.*;
+import com.realworld.springmongo.user.UserContext;
+import com.realworld.springmongo.user.UserService;
+import com.realworld.springmongo.user.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -16,45 +16,48 @@ import javax.validation.Valid;
 public class UserController {
 
     private final UserService userService;
+    private final UserContext userContext;
 
     @PostMapping("/users/login")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<UserWithToken> login(@RequestBody @Valid UserAuthenticationRequest request) {
+    public Mono<UserView> login(@RequestBody @Valid UserAuthenticationRequest request) {
         return userService.login(request);
     }
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<UserWithToken> signup(@RequestBody @Valid UserRegistrationRequest request) {
+    public Mono<UserView> signup(@RequestBody @Valid UserRegistrationRequest request) {
         return userService.signup(request);
     }
 
     @GetMapping("/user")
-    public Mono<UserWithToken> currentUser(@AuthenticationPrincipal Mono<TokenPrincipal> principalMono) {
-        return userService.getCurrentUser(principalMono);
+    public Mono<UserView> currentUser() {
+        return userService.getCurrentUser();
     }
 
     @PutMapping("/user")
-    public Mono<UserWithToken> updateUser(@RequestBody @Valid UpdateUserRequest request, @AuthenticationPrincipal Mono<TokenPrincipal> principal) {
-        return userService.updateUser(request, principal);
+    public Mono<UserView> updateUser(@RequestBody @Valid UpdateUserRequest request) {
+        return userContext.getCurrentUserAndToken()
+                .flatMap(it -> userService.updateUser(request, it));
     }
 
     @GetMapping("/profiles/{username}")
-    public Mono<ProfileDto> getProfile(@PathVariable String username, @AuthenticationPrincipal Mono<TokenPrincipal> principalMono) {
-        if (principalMono == null) {
-            return userService.getProfile(username, "");
-        }
-        return principalMono.flatMap(principal -> userService.getProfile(username, principal.userId()));
+    public Mono<ProfileView> getProfile(@PathVariable String username) {
+        return userContext.getCurrentUser()
+                .flatMap((currentUser -> userService.getProfile(username, currentUser)))
+                .switchIfEmpty(userService.getProfile(username));
     }
 
     @PostMapping("/profiles/{username}/follow")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ProfileDto> follow(@PathVariable String username, @AuthenticationPrincipal Mono<TokenPrincipal> tokenPrincipal) {
-        return tokenPrincipal.flatMap(principal -> userService.follow(username, principal.userId()));
+    public Mono<ProfileView> follow(@PathVariable String username) {
+        return userContext.getCurrentUser()
+                .flatMap(currentUser -> userService.follow(username, currentUser));
     }
 
     @DeleteMapping("/profiles/{username}/follow")
-    public Mono<ProfileDto> unfollow(@PathVariable String username, @AuthenticationPrincipal Mono<TokenPrincipal> tokenPrincipal) {
-        return tokenPrincipal.flatMap(principal -> userService.unfollow(username, principal.userId()));
+    public Mono<ProfileView> unfollow(@PathVariable String username) {
+        return userContext.getCurrentUser()
+                .flatMap(currentUser -> userService.unfollow(username, currentUser));
     }
 }

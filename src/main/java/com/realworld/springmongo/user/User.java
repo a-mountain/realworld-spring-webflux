@@ -1,5 +1,6 @@
 package com.realworld.springmongo.user;
 
+import com.realworld.springmongo.article.Article;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -8,7 +9,7 @@ import java.util.List;
 @Document
 @Builder
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @AllArgsConstructor
 public class User {
 
@@ -39,4 +40,36 @@ public class User {
     @Getter
     @Setter
     private String image;
+
+    @Getter
+    @Setter
+    private List<String> favoriteArticleIds;
+
+    public void follow(String userId) {
+        followeeIds.add(userId);
+    }
+
+    public void unfollow(String userId) {
+        followeeIds.remove(userId);
+    }
+
+    public void follow(User user) {
+        follow(user.getId());
+    }
+
+    public void unfollow(User user) {
+        unfollow(user.getId());
+    }
+
+    public boolean isFavoriteArticle(Article article) {
+        return favoriteArticleIds.contains(article.getId());
+    }
+
+    public boolean isFollowee(User user) {
+        return followeeIds.contains(user.getId());
+    }
+
+    public boolean isFollowedBy(User user) {
+        return user.isFollowee(this);
+    }
 }

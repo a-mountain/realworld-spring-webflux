@@ -1,6 +1,10 @@
 package helpers.user;
 
-import com.realworld.springmongo.user.*;
+import com.realworld.springmongo.user.PasswordService;
+import com.realworld.springmongo.user.User;
+import com.realworld.springmongo.user.dto.UpdateUserRequest;
+import com.realworld.springmongo.user.dto.UserAuthenticationRequest;
+import com.realworld.springmongo.user.dto.UserRegistrationRequest;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -11,6 +15,7 @@ public class UserSamples {
     public static final String SAMPLE_EMAIL = "testemail@gmail.com";
     public static final String SAMPLE_PASSWORD = "testpassword";
     public static final String SAMPLE_USER_ID = UUID.randomUUID().toString();
+    private static final PasswordService passwordService = new PasswordService();
 
     public static UserRegistrationRequest sampleUserRegistrationRequest() {
         return new UserRegistrationRequest()
@@ -35,6 +40,10 @@ public class UserSamples {
                 .image("test image url")
                 .bio("test bio")
                 .followeeIds(new ArrayList<>());
+    }
+
+    public static User.UserBuilder sampleUser() {
+        return sampleUser(passwordService);
     }
 
     public static UpdateUserRequest sampleUpdateUserRequest() {

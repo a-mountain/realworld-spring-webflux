@@ -1,21 +1,28 @@
-package com.realworld.springmongo.user;
+package com.realworld.springmongo.user.dto;
 
+import com.realworld.springmongo.validation.NotBlankOrNull;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 
 @Data
 @Accessors(chain = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserAuthenticationRequest {
+public class UpdateUserRequest {
     @Email
-    @NotBlank
+    @NotBlankOrNull
     String email;
 
-    @NotBlank
+    @NotBlankOrNull
+    String username;
+
+    @NotBlankOrNull
     String password;
+
+    String image;
+
+    String bio;
 }

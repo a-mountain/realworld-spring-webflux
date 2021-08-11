@@ -1,9 +1,9 @@
 package com.realworld.springmongo.api;
 
-import com.realworld.springmongo.user.UpdateUserRequest;
-import com.realworld.springmongo.user.UserRegistrationRequest;
 import com.realworld.springmongo.user.UserRepository;
-import com.realworld.springmongo.user.UserWithToken;
+import com.realworld.springmongo.user.dto.UpdateUserRequest;
+import com.realworld.springmongo.user.dto.UserRegistrationRequest;
+import com.realworld.springmongo.user.dto.UserView;
 import helpers.user.UserApiSupport;
 import helpers.user.UserSamples;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +42,7 @@ class UserApiTest {
         assertThatSignupResponseIsValid(userRegistrationRequest, body);
     }
 
-    private void assertThatSignupResponseIsValid(UserRegistrationRequest userRegistrationRequest, UserWithToken body) {
+    private void assertThatSignupResponseIsValid(UserRegistrationRequest userRegistrationRequest, UserView body) {
         assertThat(body.getUsername()).isEqualTo(userRegistrationRequest.getUsername());
         assertThat(body.getEmail()).isEqualTo(userRegistrationRequest.getEmail());
         assertThat(body.getBio()).isNull();
@@ -62,7 +62,7 @@ class UserApiTest {
         assertThatLoginResponseIsValid(userRegistrationRequest, result);
     }
 
-    private void assertThatLoginResponseIsValid(UserRegistrationRequest userRegistrationRequest, UserWithToken result) {
+    private void assertThatLoginResponseIsValid(UserRegistrationRequest userRegistrationRequest, UserView result) {
         assertThat(result.getUsername()).isEqualTo(userRegistrationRequest.getUsername());
         assertThat(result.getEmail()).isEqualTo(userRegistrationRequest.getEmail());
         assertThat(result.getBio()).isNull();
@@ -173,7 +173,7 @@ class UserApiTest {
         assertThat(follower.getFolloweeIds()).doesNotContain(followee.getId());
     }
 
-    private UserWithToken prepareFollowerAndFollowee(UserRegistrationRequest followeeRegistrationRequest, UserRegistrationRequest followerRegistrationRequest) {
+    private UserView prepareFollowerAndFollowee(UserRegistrationRequest followeeRegistrationRequest, UserRegistrationRequest followerRegistrationRequest) {
         api.signup(followeeRegistrationRequest);
         var followerDto = api.signup(followerRegistrationRequest).getResponseBody();
         assert followerDto != null;
@@ -199,7 +199,7 @@ class UserApiTest {
         assertThat(user.getImage()).isEqualTo(updateUserRequest.getImage());
     }
 
-    private void assertThatUpdateUserResponseIsValid(UpdateUserRequest updateUserRequest, UserWithToken body) {
+    private void assertThatUpdateUserResponseIsValid(UpdateUserRequest updateUserRequest, UserView body) {
         assertThat(body.getBio()).isEqualTo(updateUserRequest.getBio());
         assertThat(body.getImage()).isEqualTo(updateUserRequest.getImage());
         assertThat(body.getUsername()).isEqualTo(updateUserRequest.getUsername());

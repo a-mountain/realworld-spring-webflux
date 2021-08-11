@@ -1,5 +1,6 @@
-package com.realworld.springmongo.user;
+package com.realworld.springmongo.user.dto;
 
+import com.realworld.springmongo.user.User;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.Accessors;
