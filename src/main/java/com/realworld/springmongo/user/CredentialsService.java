@@ -21,7 +21,7 @@ public class CredentialsService implements UserContext {
     private final UserTokenProvider tokenProvider;
 
     @Override
-    public Mono<User> getCurrentUser() {
+    public Mono<User> getCurrentUserOrEmpty() {
         return getCurrentUserAndToken()
                 .map(UserAndToken::user);
     }

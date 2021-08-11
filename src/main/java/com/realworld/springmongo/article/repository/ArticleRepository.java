@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 
@@ -13,7 +14,11 @@ public interface ArticleRepository extends ReactiveMongoRepository<Article, Stri
 
     Flux<Article> findMostRecentByAuthorIdIn(Collection<String> authorId, Pageable pageable);
 
+    Mono<Article> findBySlug(String slug);
+
     default Flux<Article> findMostRecentArticlesByAuthorIds(Collection<String> authorId, int offset, int limit) {
         return findMostRecentByAuthorIdIn(authorId, OffsetBasedPageable.of(limit, offset, MOST_RECENT_SORT));
     }
+
+    Mono<Article> deleteArticleBySlug(String slug);
 }

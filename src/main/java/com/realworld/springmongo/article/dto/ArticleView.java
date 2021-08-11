@@ -49,6 +49,10 @@ public class ArticleView {
                 .setAuthor(author);
     }
 
+    public static ArticleView ownArticleView(Article article, User articleOwner) {
+        return articleViewForViewer(article, ProfileView.ownProfile(articleOwner), articleOwner);
+    }
+
     public static ArticleView articleViewForViewer(Article article, ProfileView author, User user) {
         return articleView(article, author, user.isFavoriteArticle(article));
     }

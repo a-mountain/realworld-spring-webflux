@@ -43,7 +43,7 @@ public class UserController {
 
     @GetMapping("/profiles/{username}")
     public Mono<ProfileView> getProfile(@PathVariable String username) {
-        return userContext.getCurrentUser()
+        return userContext.getCurrentUserOrEmpty()
                 .flatMap((currentUser -> userService.getProfile(username, currentUser)))
                 .switchIfEmpty(userService.getProfile(username));
     }
@@ -51,13 +51,13 @@ public class UserController {
     @PostMapping("/profiles/{username}/follow")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<ProfileView> follow(@PathVariable String username) {
-        return userContext.getCurrentUser()
+        return userContext.getCurrentUserOrEmpty()
                 .flatMap(currentUser -> userService.follow(username, currentUser));
     }
 
     @DeleteMapping("/profiles/{username}/follow")
     public Mono<ProfileView> unfollow(@PathVariable String username) {
-        return userContext.getCurrentUser()
+        return userContext.getCurrentUserOrEmpty()
                 .flatMap(currentUser -> userService.unfollow(username, currentUser));
     }
 }

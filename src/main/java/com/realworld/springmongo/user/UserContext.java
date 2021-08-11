@@ -3,7 +3,7 @@ package com.realworld.springmongo.user;
 import reactor.core.publisher.Mono;
 
 public interface UserContext {
-    Mono<User> getCurrentUser();
+    Mono<User> getCurrentUserOrEmpty();
 
     Mono<UserAndToken> getCurrentUserAndToken();
 

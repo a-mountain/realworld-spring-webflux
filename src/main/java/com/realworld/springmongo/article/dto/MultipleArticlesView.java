@@ -12,6 +12,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MultipleArticlesView {
     List<ArticleView> articles;
+
     int articlesCount;
 
     public static MultipleArticlesView of(List<ArticleView> articles) {

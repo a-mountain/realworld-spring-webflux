@@ -24,7 +24,6 @@ public class Article {
     private final String id;
 
     @Getter
-    @Transient
     private String slug;
 
     @Getter

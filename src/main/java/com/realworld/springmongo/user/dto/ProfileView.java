@@ -34,6 +34,10 @@ public class ProfileView {
         return profileViewOf(userToMakeView, true);
     }
 
+    public static ProfileView ownProfile(User user) {
+        return profileViewForViewer(user, user);
+    }
+
     public static ProfileView profileViewForViewer(User userToMakeView, User viewer) {
         return profileViewOf(userToMakeView, userToMakeView.isFollower(viewer));
     }

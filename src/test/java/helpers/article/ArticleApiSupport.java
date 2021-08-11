@@ -3,6 +3,7 @@ package helpers.article;
 import com.realworld.springmongo.article.dto.ArticleView;
 import com.realworld.springmongo.article.dto.CreateArticleRequest;
 import com.realworld.springmongo.article.dto.MultipleArticlesView;
+import com.realworld.springmongo.article.dto.UpdateArticleRequest;
 import helpers.TokenHelper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
@@ -27,7 +28,6 @@ public class ArticleApiSupport {
                 .returnResult();
     }
 
-
     public EntityExchangeResult<MultipleArticlesView> findArticles(FindArticlesRequest request, String authToken) {
         var requestSpec = client
                 .get()
@@ -47,7 +47,46 @@ public class ArticleApiSupport {
                 .returnResult();
     }
 
+    public EntityExchangeResult<MultipleArticlesView> feed(String authToken, Integer offset, Integer limit) {
+        return client.get()
+                .uri(builder -> builder.path("/api/articles/feed")
+                        .queryParamIfPresent("limit", ofNullable(limit))
+                        .queryParamIfPresent("offset", ofNullable(offset))
+                        .build()
+                )
+                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
+                .exchange()
+                .expectBody(MultipleArticlesView.class)
+                .returnResult();
+    }
+
+    public EntityExchangeResult<ArticleView> getArticle(String slug, String authToken) {
+        return client.get()
+                .uri("/api/articles/" + slug)
+                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
+                .exchange()
+                .expectBody(ArticleView.class)
+                .returnResult();
+    }
+
     public EntityExchangeResult<MultipleArticlesView> findArticles(FindArticlesRequest request) {
         return findArticles(request, null);
+    }
+
+    public EntityExchangeResult<ArticleView> updateArticle(String slug, UpdateArticleRequest updateArticleRequest, String authToken) {
+        return client.put()
+                .uri("/api/articles/" + slug)
+                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
+                .bodyValue(updateArticleRequest)
+                .exchange()
+                .expectBody(ArticleView.class)
+                .returnResult();
+    }
+
+    public void deleteArticle(String slug, String authToken) {
+        client.delete()
+                .uri("/api/articles/" + slug)
+                .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
+                .exchange();
     }
 }

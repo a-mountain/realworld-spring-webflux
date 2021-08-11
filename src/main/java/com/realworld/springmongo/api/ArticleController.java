@@ -4,6 +4,7 @@ import com.realworld.springmongo.article.ArticleService;
 import com.realworld.springmongo.article.dto.ArticleView;
 import com.realworld.springmongo.article.dto.CreateArticleRequest;
 import com.realworld.springmongo.article.dto.MultipleArticlesView;
+import com.realworld.springmongo.article.dto.UpdateArticleRequest;
 import com.realworld.springmongo.security.TokenPrincipal;
 import com.realworld.springmongo.user.UserContext;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,7 @@ public class ArticleController {
             @RequestParam(value = "favorited", required = false) String favoritedByUser,
             @RequestParam(value = "author", required = false) String author
     ) {
-        return userContext.getCurrentUser()
+        return userContext.getCurrentUserOrEmpty()
                 .flatMap(currentUser -> articleService.findArticles(tag, author, favoritedByUser, offset, limit, currentUser))
                 .switchIfEmpty(articleService.findArticles(tag, author, favoritedByUser, offset, limit));
     }
@@ -46,7 +47,25 @@ public class ArticleController {
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "limit", defaultValue = "20") int limit
     ) {
-        return userContext.getCurrentUser()
+        return userContext.getCurrentUserOrEmpty()
                 .flatMap(currentUser -> articleService.feed(offset, limit, currentUser));
+    }
+
+    @GetMapping("/articles/{slug}")
+    public Mono<ArticleView> getArticle(@PathVariable String slug) {
+        return userContext.getCurrentUserOrEmpty()
+                .flatMap(currentUser -> articleService.getArticle(slug, currentUser))
+                .switchIfEmpty(articleService.getArticle(slug));
+    }
+
+    @PutMapping("/articles/{slug}")
+    public Mono<ArticleView> updateArticle(@RequestBody UpdateArticleRequest request, @PathVariable String slug) {
+        return userContext.getCurrentUserOrEmpty()
+                .flatMap(currentUser -> articleService.updateArticle(slug, request, currentUser));
+    }
+
+    @DeleteMapping("/articles/{slug}")
+    public Mono<Void> deleteArticle(@PathVariable String slug) {
+        return articleService.deleteArticle(slug);
     }
 }
