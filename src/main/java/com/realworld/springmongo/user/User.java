@@ -61,6 +61,14 @@ public class User {
         unfollow(user.getId());
     }
 
+    public void favorite(Article article) {
+        favoriteArticleIds.add(article.getId());
+    }
+
+    public void unfavorite(Article article) {
+        favoriteArticleIds.remove(article.getId());
+    }
+
     public boolean isFavoriteArticle(Article article) {
         return favoriteArticleIds.contains(article.getId());
     }

@@ -219,6 +219,27 @@ public class ArticleApiTest {
         assertThat(new HashSet<>(actualComments.getComments())).isEqualTo(expectedComments);
     }
 
+    @Test
+    void shouldFavoriteArticle() {
+        var user = userApi.signup();
+        var article = articleApi.createArticle(ArticleSamples.sampleCreateArticleRequest(), user.getToken())
+                .getResponseBody();
+        var favoritedArticle = articleApi.favoriteArticle(article.getSlug(), user).getResponseBody();
+        assertThat(article.getFavorited()).isFalse();
+        assertThat(favoritedArticle.getFavorited()).isTrue();
+    }
+
+    @Test
+    void shouldUnfavoriteArticle() {
+        var user = userApi.signup();
+        var article = articleApi.createArticle(ArticleSamples.sampleCreateArticleRequest(), user.getToken())
+                .getResponseBody();
+        var favoritedArticle = articleApi.favoriteArticle(article.getSlug(), user).getResponseBody();
+        var unfavoritedArticle = articleApi.unfavoriteArticle(article.getSlug(), user).getResponseBody();
+        assertThat(favoritedArticle.getFavorited()).isTrue();
+        assertThat(unfavoritedArticle.getFavorited()).isFalse();
+    }
+
     ArticlesAndUsers create2UsersAnd3Articles(String tag) {
         var user1 = userApi.signup();
         var userRegistrationRequest = UserSamples.sampleUserRegistrationRequest()

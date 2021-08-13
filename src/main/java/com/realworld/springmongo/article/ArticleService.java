@@ -7,11 +7,9 @@ import com.realworld.springmongo.user.User;
 import com.realworld.springmongo.user.UserRepository;
 import com.realworld.springmongo.user.dto.ProfileView;
 import lombok.RequiredArgsConstructor;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -109,7 +107,7 @@ public class ArticleService {
                             .ifPresent(article::setDescription);
                     ofNullable(request.getTitle())
                             .ifPresent(article::setTitle);
-                    return ArticleView.toOwnArticleView(article, currentUser);
+                    return ArticleView.ofOwnArticle(article, currentUser);
                 });
     }
 
@@ -165,6 +163,22 @@ public class ArticleService {
                             .map(comment -> CommentView.toCommentView(comment, authorProfile))
                             .toList();
                     return MultipleCommentsView.of(commentViews);
+                });
+    }
+
+    public Mono<ArticleView> favoriteArticle(String slug, User currentUser) {
+        return articleRepository.findBySlug(slug)
+                .map(article -> {
+                    currentUser.favorite(article);
+                    return ArticleView.ofOwnArticle(article, currentUser);
+                });
+    }
+
+    public Mono<ArticleView> unfavoriteArticle(String slug, User currentUser) {
+        return articleRepository.findBySlug(slug)
+                .map(article -> {
+                    currentUser.unfavorite(article);
+                    return ArticleView.ofOwnArticle(article, currentUser);
                 });
     }
 }

@@ -1,10 +1,15 @@
 package helpers.article;
 
 import com.realworld.springmongo.article.dto.*;
+import com.realworld.springmongo.user.User;
+import com.realworld.springmongo.user.dto.UserView;
 import helpers.TokenHelper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 import static java.util.Optional.ofNullable;
 
@@ -127,5 +132,27 @@ public class ArticleApiSupport {
                 .exchange()
                 .expectBody(MultipleCommentsView.class)
                 .returnResult();
+    }
+
+    public EntityExchangeResult<ArticleView> favoriteArticle(String articleSlug, UserView user) {
+        return client.post()
+                .uri("/api/articles/{slug}/favorite", articleSlug)
+                .headers(authHeader(user))
+                .exchange()
+                .expectBody(ArticleView.class)
+                .returnResult();
+    }
+
+    public EntityExchangeResult<ArticleView> unfavoriteArticle(String articleSlug, UserView user) {
+        return client.delete()
+                .uri("/api/articles/{slug}/favorite", articleSlug)
+                .headers(authHeader(user))
+                .exchange()
+                .expectBody(ArticleView.class)
+                .returnResult();
+    }
+
+    private Consumer<HttpHeaders> authHeader(UserView user) {
+        return headers -> headers.put(HttpHeaders.AUTHORIZATION, List.of(TokenHelper.formatToken(user.getToken())));
     }
 }

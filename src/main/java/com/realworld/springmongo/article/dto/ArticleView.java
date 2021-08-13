@@ -63,7 +63,7 @@ public class ArticleView {
                 .setAuthor(author);
     }
 
-    public static ArticleView toOwnArticleView(Article article, User articleOwner) {
+    public static ArticleView ofOwnArticle(Article article, User articleOwner) {
         return toArticleViewForViewer(article, ProfileView.toOwnProfile(articleOwner), articleOwner);
     }
 

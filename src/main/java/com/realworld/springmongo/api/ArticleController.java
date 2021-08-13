@@ -89,4 +89,18 @@ public class ArticleController {
         return userContext.getCurrentUserOrEmpty()
                 .flatMap(currentUser -> articleService.deleteComment(commentId, slug, currentUser));
     }
+
+    @PostMapping("/articles/{slug}/favorite")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<ArticleView> favoriteArticle(@PathVariable String slug) {
+        return userContext.getCurrentUserOrEmpty()
+                .flatMap(currentUser -> articleService.favoriteArticle(slug, currentUser));
+    }
+
+
+    @DeleteMapping("/articles/{slug}/favorite")
+    public Mono<ArticleView> unfavoriteArticle(@PathVariable String slug) {
+        return userContext.getCurrentUserOrEmpty()
+                .flatMap(currentUser -> articleService.unfavoriteArticle(slug, currentUser));
+    }
 }
