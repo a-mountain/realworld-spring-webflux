@@ -119,8 +119,14 @@ public class ArticleService {
                 });
     }
 
-    public Mono<Void> deleteArticle(String slug) {
-        return articleRepository.deleteArticleBySlug(slug).then();
+    public Mono<Void> deleteArticle(String slug, User articleAuthor) {
+        return articleRepository.findBySlug(slug)
+                .flatMap(article -> {
+                    if (!article.isAuthor(articleAuthor)) {
+                        return Mono.error(new InvalidRequestException("Article", "only author can delete article"));
+                    }
+                    return articleRepository.deleteArticleBySlug(slug).then();
+                });
     }
 
     public Mono<CommentView> addComment(String slug, CreateCommentRequest request, User currentUser) {
@@ -137,16 +143,17 @@ public class ArticleService {
     public Mono<Void> deleteComment(String commentId, String slug, User user) {
         return articleRepository.findBySlug(slug)
                 .switchIfEmpty(Mono.error(new InvalidRequestException("Article", "not found")))
-                .flatMap(article -> {
-                    var comment = article.getCommentById(commentId);
-                    if (comment.isEmpty()) {
-                        return Mono.empty();
-                    }
-                    if (!comment.get().isAuthor(user)) {
-                        return Mono.error(new InvalidRequestException("Comment", "only author can delete comment"));
-                    }
-                    article.deleteComment(comment.get());
-                    return articleRepository.save(article).then();
-                });
+                .flatMap(article -> article.getCommentById(commentId)
+                        .map(comment -> deleteComment(article, comment, user))
+                        .orElse(Mono.empty())
+                );
+    }
+
+    public Mono<Void> deleteComment(Article article, Comment comment, User user) {
+        if (!comment.isAuthor(user)) {
+            return Mono.error(new InvalidRequestException("Comment", "only author can delete comment"));
+        }
+        article.deleteComment(comment);
+        return articleRepository.save(article).then();
     }
 }

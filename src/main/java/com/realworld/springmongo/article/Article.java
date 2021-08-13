@@ -98,13 +98,6 @@ public class Article {
         comments.remove(comment);
     }
 
-    public void deleteComment(String commentId) {
-        comments.stream()
-                .filter(comment -> comment.getId().equals(commentId))
-                .findFirst()
-                .ifPresent(this::deleteComment);
-    }
-
     public void setTitle(String title) {
         this.title = title;
         updateSlug();

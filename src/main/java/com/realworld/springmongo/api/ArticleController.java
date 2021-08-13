@@ -63,7 +63,8 @@ public class ArticleController {
 
     @DeleteMapping("/articles/{slug}")
     public Mono<Void> deleteArticle(@PathVariable String slug) {
-        return articleService.deleteArticle(slug);
+        return userContext.getCurrentUserOrEmpty()
+                .flatMap(currentUser -> articleService.deleteArticle(slug, currentUser));
     }
 
     @PostMapping("/articles/{slug}/comments")
