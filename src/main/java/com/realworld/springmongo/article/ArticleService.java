@@ -11,6 +11,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,16 +47,12 @@ public class ArticleService {
                 .map(MultipleArticlesView::of);
     }
 
-    public Mono<MultipleArticlesView> findArticles(String tag, String author, String favoritedByUser, int offset, int limit, @Nullable User currentUser) {
+    public Mono<MultipleArticlesView> findArticles(String tag, String author, String favoritedByUser, int offset, int limit, Optional<User> currentUser) {
         return createFindArticleRequest(tag, author, favoritedByUser, offset, limit)
                 .flatMapMany(articleRepository::findMostRecentArticlesFilteredBy)
-                .flatMap(article -> currentUser != null ? toArticleViewForUser(article, currentUser) : toArticleView(article))
+                .flatMap(article -> currentUser.map(it -> toArticleViewForUser(article, it)).orElse(toArticleView(article)))
                 .collectList()
                 .map(MultipleArticlesView::of);
-    }
-
-    public Mono<MultipleArticlesView> findArticles(String tag, String author, String favoritedByUser, int offset, int limit) {
-        return findArticles(tag, author, favoritedByUser, offset, limit, null);
     }
 
     public Mono<FindArticlesRequest> createFindArticleRequest(String tag, String author, String favoritedByUser, int offset, int limit) {
@@ -94,15 +91,12 @@ public class ArticleService {
         return userRepository.findByUsername(favoritedBy);
     }
 
-    public Mono<ArticleView> getArticle(String slug, User currentUser) {
+    public Mono<ArticleView> getArticle(String slug, Optional<User> currentUser) {
         return articleRepository.findBySlug(slug)
-                .flatMap(article -> toArticleViewForUser(article, currentUser));
-    }
-
-    public Mono<ArticleView> getArticle(String slug) {
-        return articleRepository
-                .findBySlug(slug)
-                .flatMap(this::toArticleView);
+                .flatMap(article -> currentUser
+                        .map(it -> toArticleViewForUser(article, it))
+                        .orElse(toArticleView(article))
+                );
     }
 
     public Mono<ArticleView> updateArticle(String slug, UpdateArticleRequest request, User currentUser) {
@@ -155,5 +149,22 @@ public class ArticleService {
         }
         article.deleteComment(comment);
         return articleRepository.save(article).then();
+    }
+
+    public Mono<MultipleCommentsView> getComments(String slug, Optional<User> user) {
+        return articleRepository.findBySlug(slug)
+                .zipWhen(article -> userRepository.findById(article.getAuthorId()))
+                .map(tuple -> {
+                    var article = tuple.getT1();
+                    var author = tuple.getT2();
+                    var comments = article.getComments();
+                    var authorProfile = user
+                            .map(viewer -> toProfileViewForViewer(author, viewer))
+                            .orElse(toUnfollowedProfileView(author));
+                    var commentViews = comments.stream()
+                            .map(comment -> CommentView.toCommentView(comment, authorProfile))
+                            .toList();
+                    return MultipleCommentsView.of(commentViews);
+                });
     }
 }

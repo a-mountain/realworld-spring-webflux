@@ -24,7 +24,9 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -176,12 +178,12 @@ public class ArticleApiTest {
         var article = articleApi.createArticle(ArticleSamples.sampleCreateArticleRequest(), user.getToken()).getResponseBody();
         assert article != null;
         var request = new CreateCommentRequest("test comment");
+
         var commentView = articleApi.addComment(article.getSlug(), request, user.getToken()).getResponseBody();
         assert commentView != null;
 
         assertThat(commentView.getBody()).isEqualTo(request.getBody());
         assertThat(commentView.getAuthor().getUsername()).isEqualTo(user.getUsername());
-
         var savedArticle = articleRepository.findAll().blockFirst();
         assert savedArticle != null;
         assertThat(savedArticle.getComments()).isNotEmpty();
@@ -203,6 +205,19 @@ public class ArticleApiTest {
         assertThat(savedArticle.getComments()).isEmpty();
     }
 
+    @Test
+    void shouldGetComments() {
+        var user = userApi.signup();
+        userApi.follow(user.getUsername(), user.getToken());
+        var article = articleApi.createArticle(ArticleSamples.sampleCreateArticleRequest(), user.getToken()).getResponseBody();
+        var comment1 = articleApi.addComment(article.getSlug(), "comment 1", user.getToken()).getResponseBody();
+        var comment2 = articleApi.addComment(article.getSlug(), "comment 2", user.getToken()).getResponseBody();
+        var expectedComments = Set.of(comment1, comment2);
+
+        var actualComments = articleApi.getComments(article.getSlug(), user.getToken()).getResponseBody();
+
+        assertThat(new HashSet<>(actualComments.getComments())).isEqualTo(expectedComments);
+    }
 
     ArticlesAndUsers create2UsersAnd3Articles(String tag) {
         var user1 = userApi.signup();

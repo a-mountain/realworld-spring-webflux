@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @Accessors(chain = true)
@@ -28,6 +29,19 @@ public class ArticleView {
     Instant createdAt;
 
     Instant updatedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ArticleView that = (ArticleView) o;
+        return slug.equals(that.slug) && title.equals(that.title) && description.equals(that.description) && body.equals(that.body) && tagList.equals(that.tagList) && favorited.equals(that.favorited) && favoritesCount.equals(that.favoritesCount) && author.equals(that.author);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(slug, title, description, body, tagList, favorited, favoritesCount, author);
+    }
 
     Boolean favorited;
 

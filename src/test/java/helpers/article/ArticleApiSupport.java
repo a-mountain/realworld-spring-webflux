@@ -90,6 +90,10 @@ public class ArticleApiSupport {
                 .returnResult();
     }
 
+    public EntityExchangeResult<CommentView> addComment(String articleSlug, String body, String authToken) {
+        return addComment(articleSlug, new CreateCommentRequest(body), authToken);
+    }
+
     public EntityExchangeResult<Void> deleteComment(String articleSlug, String commentId, String authToken) {
         return client.delete()
                 .uri("/api/articles/" + articleSlug + "/comments/" + commentId)

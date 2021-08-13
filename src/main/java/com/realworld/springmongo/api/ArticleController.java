@@ -11,6 +11,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -35,8 +37,8 @@ public class ArticleController {
             @RequestParam(value = "author", required = false) String author
     ) {
         return userContext.getCurrentUserOrEmpty()
-                .flatMap(currentUser -> articleService.findArticles(tag, author, favoritedByUser, offset, limit, currentUser))
-                .switchIfEmpty(articleService.findArticles(tag, author, favoritedByUser, offset, limit));
+                .flatMap(currentUser -> articleService.findArticles(tag, author, favoritedByUser, offset, limit, Optional.of(currentUser)))
+                .switchIfEmpty(articleService.findArticles(tag, author, favoritedByUser, offset, limit, Optional.empty()));
     }
 
     @GetMapping("/articles/feed")
@@ -51,8 +53,8 @@ public class ArticleController {
     @GetMapping("/articles/{slug}")
     public Mono<ArticleView> getArticle(@PathVariable String slug) {
         return userContext.getCurrentUserOrEmpty()
-                .flatMap(currentUser -> articleService.getArticle(slug, currentUser))
-                .switchIfEmpty(articleService.getArticle(slug));
+                .flatMap(currentUser -> articleService.getArticle(slug, Optional.of(currentUser)))
+                .switchIfEmpty(articleService.getArticle(slug, Optional.empty()));
     }
 
     @PutMapping("/articles/{slug}")
@@ -65,6 +67,14 @@ public class ArticleController {
     public Mono<Void> deleteArticle(@PathVariable String slug) {
         return userContext.getCurrentUserOrEmpty()
                 .flatMap(currentUser -> articleService.deleteArticle(slug, currentUser));
+    }
+
+
+    @GetMapping("/articles/{slug}/comments")
+    public Mono<MultipleCommentsView> getComments(@PathVariable String slug) {
+        return userContext.getCurrentUserOrEmpty()
+                .flatMap(currentUser -> articleService.getComments(slug, Optional.of(currentUser)))
+                .switchIfEmpty(articleService.getComments(slug, Optional.empty()));
     }
 
     @PostMapping("/articles/{slug}/comments")

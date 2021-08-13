@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.util.Objects;
 
 @Data
 @Accessors(chain = true)
@@ -26,5 +27,18 @@ public class CommentView {
                 .setUpdatedAt(comment.getUpdatedAt())
                 .setBody(comment.getBody())
                 .setAuthor(author);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CommentView that = (CommentView) o;
+        return id.equals(that.id) && body.equals(that.body) && author.equals(that.author);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, body, author);
     }
 }
