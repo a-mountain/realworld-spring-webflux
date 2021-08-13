@@ -103,4 +103,9 @@ public class ArticleController {
         return userContext.getCurrentUserOrEmpty()
                 .flatMap(currentUser -> articleService.unfavoriteArticle(slug, currentUser));
     }
+
+    @GetMapping("/tags")
+    public Mono<TagListView> getTags() {
+        return articleService.getTags();
+    }
 }

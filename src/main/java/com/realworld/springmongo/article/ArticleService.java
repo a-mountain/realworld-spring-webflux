@@ -2,14 +2,17 @@ package com.realworld.springmongo.article;
 
 import com.realworld.springmongo.article.dto.*;
 import com.realworld.springmongo.article.repository.ArticleRepository;
+import com.realworld.springmongo.article.repository.TagRepository;
 import com.realworld.springmongo.exceptions.InvalidRequestException;
 import com.realworld.springmongo.user.User;
 import com.realworld.springmongo.user.UserRepository;
 import com.realworld.springmongo.user.dto.ProfileView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,16 +27,28 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
     private final UserRepository userRepository;
+    private final TagRepository tagRepository;
+
+    public Mono<TagListView> getTags() {
+        return tagRepository.findAll()
+                .collectList()
+                .map(TagListView::of);
+    }
 
     public Mono<ArticleView> createArticle(CreateArticleRequest request, String authorId) {
         var id = UUID.randomUUID().toString();
         var article = request.toArticle(id, authorId);
-        return articleRepository
-                .save(article)
-                .zipWith(userRepository.findById(authorId), (theArticle, user) -> {
+        var saveArticle = articleRepository.save(article);
+        return saveArticle
+                .then(saveTags(article.getTags()))
+                .then(saveArticle).zipWith(userRepository.findById(authorId), (theArticle, user) -> {
                     var profileDto = ProfileView.toUnfollowedProfileView(user);
                     return ArticleView.toUnfavoredArticleView(theArticle, profileDto);
                 });
+    }
+
+    public Mono<Void> saveTags(List<String> rowTags) {
+        return tagRepository.saveAllTags(rowTags).then();
     }
 
     public Mono<MultipleArticlesView> feed(int offset, int limit, User currentUser) {

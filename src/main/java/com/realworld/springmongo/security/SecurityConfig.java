@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.POST, "/api/users", "/api/users/login").permitAll()
                 .pathMatchers(HttpMethod.GET, "/api/profiles/**").permitAll()
                 .pathMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
+                .pathMatchers(HttpMethod.GET, "/api/tags/**").permitAll()
                 .anyExchange().authenticated();
     }
 

@@ -1,14 +1,14 @@
 package com.realworld.springmongo.api;
 
-import com.realworld.springmongo.article.Article;
-import com.realworld.springmongo.article.Comment;
-import com.realworld.springmongo.article.dto.*;
+import com.realworld.springmongo.article.dto.ArticleView;
+import com.realworld.springmongo.article.dto.CreateArticleRequest;
+import com.realworld.springmongo.article.dto.CreateCommentRequest;
+import com.realworld.springmongo.article.dto.UpdateArticleRequest;
 import com.realworld.springmongo.article.repository.ArticleRepository;
+import com.realworld.springmongo.article.repository.TagRepository;
 import com.realworld.springmongo.user.UserRepository;
 import com.realworld.springmongo.user.dto.ProfileView;
-import com.realworld.springmongo.user.dto.UserRegistrationRequest;
 import com.realworld.springmongo.user.dto.UserView;
-import helpers.TokenHelper;
 import helpers.article.ArticleApiSupport;
 import helpers.article.ArticleSamples;
 import helpers.article.FindArticlesRequest;
@@ -18,10 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
-import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -42,6 +39,9 @@ public class ArticleApiTest {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    TagRepository tagRepository;
+
     UserApiSupport userApi;
 
     ArticleApiSupport articleApi;
@@ -52,6 +52,7 @@ public class ArticleApiTest {
         articleApi = new ArticleApiSupport(client);
         userRepository.deleteAll().block();
         articleRepository.deleteAll().block();
+        tagRepository.deleteAll().block();
     }
 
     @Test
@@ -238,6 +239,19 @@ public class ArticleApiTest {
         var unfavoritedArticle = articleApi.unfavoriteArticle(article.getSlug(), user).getResponseBody();
         assertThat(favoritedArticle.getFavorited()).isTrue();
         assertThat(unfavoritedArticle.getFavorited()).isFalse();
+    }
+
+    @Test
+    void shouldGetTags() {
+        var user = userApi.signup();
+        var request1 = ArticleSamples.sampleCreateArticleRequest()
+                .setTagList(List.of("tag1", "tag2", "tag2"));
+        var request2 = ArticleSamples.sampleCreateArticleRequest()
+                .setTagList(List.of("tag3", "tag4", "tag3"));
+        articleApi.createArticle(request1, user.getToken());
+        articleApi.createArticle(request2, user.getToken());
+        var tagListView = articleApi.getTags().getResponseBody();
+        assertThat(tagListView.getTags()).isEqualTo(List.of("tag1", "tag2", "tag3", "tag4"));
     }
 
     ArticlesAndUsers create2UsersAnd3Articles(String tag) {

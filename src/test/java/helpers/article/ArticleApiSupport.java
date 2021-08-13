@@ -152,6 +152,15 @@ public class ArticleApiSupport {
                 .returnResult();
     }
 
+
+    public EntityExchangeResult<TagListView> getTags() {
+        return client.get()
+                .uri("/api/tags")
+                .exchange()
+                .expectBody(TagListView.class)
+                .returnResult();
+    }
+
     private Consumer<HttpHeaders> authHeader(UserView user) {
         return headers -> headers.put(HttpHeaders.AUTHORIZATION, List.of(TokenHelper.formatToken(user.getToken())));
     }
