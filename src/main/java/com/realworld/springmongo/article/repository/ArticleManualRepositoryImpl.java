@@ -3,7 +3,6 @@ package com.realworld.springmongo.article.repository;
 import com.realworld.springmongo.article.Article;
 import com.realworld.springmongo.user.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;

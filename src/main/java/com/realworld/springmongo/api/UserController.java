@@ -7,7 +7,6 @@ import com.realworld.springmongo.api.wrappers.UserWrapper.UserRegistrationReques
 import com.realworld.springmongo.api.wrappers.UserWrapper.UserViewWrapper;
 import com.realworld.springmongo.user.UserContext;
 import com.realworld.springmongo.user.UserService;
-import com.realworld.springmongo.user.dto.ProfileView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

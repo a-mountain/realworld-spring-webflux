@@ -1,10 +1,8 @@
 package helpers.article;
 
-import com.realworld.springmongo.api.wrappers.ArticleWrapper;
 import com.realworld.springmongo.api.wrappers.ArticleWrapper.ArticleViewWrapper;
 import com.realworld.springmongo.api.wrappers.ArticleWrapper.CreateArticleRequestWrapper;
 import com.realworld.springmongo.api.wrappers.ArticleWrapper.UpdateArticleRequestWrapper;
-import com.realworld.springmongo.api.wrappers.CommentWrapper;
 import com.realworld.springmongo.api.wrappers.CommentWrapper.CommentViewWrapper;
 import com.realworld.springmongo.api.wrappers.CommentWrapper.CreateCommentRequestWrapper;
 import com.realworld.springmongo.article.dto.*;
