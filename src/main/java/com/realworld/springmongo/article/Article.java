@@ -52,7 +52,6 @@ public class Article {
     private final Instant updatedAt;
 
     @Getter
-    @Setter
     private Integer favoritesCount;
 
     @Getter
@@ -88,6 +87,14 @@ public class Article {
         this.tags = ofNullable(tags).orElse(new ArrayList<>());
         this.comments = ofNullable(comments).orElse(new ArrayList<>());
         updateSlug();
+    }
+
+    public void incrementFavoritesCount() {
+        favoritesCount++;
+    }
+
+    public void decrementFavoritesCount() {
+        favoritesCount--;
     }
 
     public void addComment(Comment comment) {

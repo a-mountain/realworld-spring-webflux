@@ -62,10 +62,12 @@ public class User {
     }
 
     public void favorite(Article article) {
+        article.incrementFavoritesCount();
         favoriteArticleIds.add(article.getId());
     }
 
     public void unfavorite(Article article) {
+        article.decrementFavoritesCount();
         favoriteArticleIds.remove(article.getId());
     }
 
