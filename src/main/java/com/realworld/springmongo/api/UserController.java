@@ -54,7 +54,6 @@ public class UserController {
     }
 
     @PostMapping("/profiles/{username}/follow")
-    @ResponseStatus(HttpStatus.CREATED)
     public Mono<ProfileWrapper> follow(@PathVariable String username) {
         return userContext.getCurrentUserOrEmpty()
                 .flatMap(currentUser -> userService.follow(username, currentUser)).map(ProfileWrapper::new);

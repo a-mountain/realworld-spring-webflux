@@ -7,7 +7,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.Instant;
-import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
@@ -42,7 +41,7 @@ public class Comment {
         this.body = body;
         this.authorId = authorId;
         this.createdAt = ofNullable(createdAt).orElse(Instant.now());
-        this.updatedAt = updatedAt;
+        this.updatedAt = ofNullable(updatedAt).orElse(this.createdAt);
     }
 
     public boolean isAuthor(User user) {
