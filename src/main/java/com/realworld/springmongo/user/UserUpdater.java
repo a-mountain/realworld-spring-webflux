@@ -38,6 +38,9 @@ public class UserUpdater {
         if (request.getUsername() == null) {
             return Mono.empty();
         }
+        if (request.getUsername().equals(user.getUsername())) {
+            return Mono.empty();
+        }
         return userRepository.existsByUsername(request.getUsername())
                 .doOnNext(existsByUsername -> {
                     if (existsByUsername) {
@@ -49,6 +52,9 @@ public class UserUpdater {
 
     private Mono<?> updateEmail(UpdateUserRequest request, User user) {
         if (request.getEmail() == null) {
+            return Mono.empty();
+        }
+        if (request.getEmail().equals(user.getEmail())) {
             return Mono.empty();
         }
         return userRepository.existsByEmail(request.getEmail())

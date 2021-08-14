@@ -1,7 +1,14 @@
 package com.realworld.springmongo.api;
 
+import com.realworld.springmongo.api.wrappers.ArticleWrapper.ArticleViewWrapper;
+import com.realworld.springmongo.api.wrappers.ArticleWrapper.CreateArticleRequestWrapper;
+import com.realworld.springmongo.api.wrappers.ArticleWrapper.UpdateArticleRequestWrapper;
+import com.realworld.springmongo.api.wrappers.CommentWrapper.CommentViewWrapper;
+import com.realworld.springmongo.api.wrappers.CommentWrapper.CreateCommentRequestWrapper;
 import com.realworld.springmongo.article.ArticleService;
-import com.realworld.springmongo.article.dto.*;
+import com.realworld.springmongo.article.dto.MultipleArticlesView;
+import com.realworld.springmongo.article.dto.MultipleCommentsView;
+import com.realworld.springmongo.article.dto.TagListView;
 import com.realworld.springmongo.security.TokenPrincipal;
 import com.realworld.springmongo.user.UserContext;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +31,8 @@ public class ArticleController {
 
     @PostMapping("/articles")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ArticleView> createArticle(@RequestBody CreateArticleRequest request, @AuthenticationPrincipal Mono<TokenPrincipal> tokenPrincipal) {
-        return tokenPrincipal.flatMap(principal -> articleService.createArticle(request, principal.userId()));
+    public Mono<ArticleViewWrapper> createArticle(@RequestBody CreateArticleRequestWrapper request, @AuthenticationPrincipal Mono<TokenPrincipal> tokenPrincipal) {
+        return tokenPrincipal.flatMap(principal -> articleService.createArticle(request.getContent(), principal.userId())).map(ArticleViewWrapper::new);
     }
 
     @GetMapping("/articles")
@@ -51,16 +58,16 @@ public class ArticleController {
     }
 
     @GetMapping("/articles/{slug}")
-    public Mono<ArticleView> getArticle(@PathVariable String slug) {
+    public Mono<ArticleViewWrapper> getArticle(@PathVariable String slug) {
         return userContext.getCurrentUserOrEmpty()
                 .flatMap(currentUser -> articleService.getArticle(slug, Optional.of(currentUser)))
-                .switchIfEmpty(articleService.getArticle(slug, Optional.empty()));
+                .switchIfEmpty(articleService.getArticle(slug, Optional.empty())).map(ArticleViewWrapper::new);
     }
 
     @PutMapping("/articles/{slug}")
-    public Mono<ArticleView> updateArticle(@RequestBody UpdateArticleRequest request, @PathVariable String slug) {
+    public Mono<ArticleViewWrapper> updateArticle(@RequestBody UpdateArticleRequestWrapper request, @PathVariable String slug) {
         return userContext.getCurrentUserOrEmpty()
-                .flatMap(currentUser -> articleService.updateArticle(slug, request, currentUser));
+                .flatMap(currentUser -> articleService.updateArticle(slug, request.getContent(), currentUser)).map(ArticleViewWrapper::new);
     }
 
     @DeleteMapping("/articles/{slug}")
@@ -79,9 +86,9 @@ public class ArticleController {
 
     @PostMapping("/articles/{slug}/comments")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<CommentView> addComment(@PathVariable String slug, @RequestBody CreateCommentRequest request) {
+    public Mono<CommentViewWrapper> addComment(@PathVariable String slug, @RequestBody CreateCommentRequestWrapper request) {
         return userContext.getCurrentUserOrEmpty()
-                .flatMap(currentUser -> articleService.addComment(slug, request, currentUser));
+                .flatMap(currentUser -> articleService.addComment(slug, request.getContent(), currentUser)).map(CommentViewWrapper::new);
     }
 
     @DeleteMapping("/articles/{slug}/comments/{commentId}")
@@ -92,16 +99,16 @@ public class ArticleController {
 
     @PostMapping("/articles/{slug}/favorite")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ArticleView> favoriteArticle(@PathVariable String slug) {
+    public Mono<ArticleViewWrapper> favoriteArticle(@PathVariable String slug) {
         return userContext.getCurrentUserOrEmpty()
-                .flatMap(currentUser -> articleService.favoriteArticle(slug, currentUser));
+                .flatMap(currentUser -> articleService.favoriteArticle(slug, currentUser)).map(ArticleViewWrapper::new);
     }
 
 
     @DeleteMapping("/articles/{slug}/favorite")
-    public Mono<ArticleView> unfavoriteArticle(@PathVariable String slug) {
+    public Mono<ArticleViewWrapper> unfavoriteArticle(@PathVariable String slug) {
         return userContext.getCurrentUserOrEmpty()
-                .flatMap(currentUser -> articleService.unfavoriteArticle(slug, currentUser));
+                .flatMap(currentUser -> articleService.unfavoriteArticle(slug, currentUser)).map(ArticleViewWrapper::new);
     }
 
     @GetMapping("/tags")

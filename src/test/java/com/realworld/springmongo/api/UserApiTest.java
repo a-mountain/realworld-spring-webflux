@@ -37,7 +37,7 @@ class UserApiTest {
         var userRegistrationRequest = UserSamples.sampleUserRegistrationRequest();
 
         var result = api.signup(userRegistrationRequest);
-        var body = requireNonNull(result.getResponseBody());
+        var body = requireNonNull(result);
 
         assertThatSignupResponseIsValid(userRegistrationRequest, body);
     }
@@ -56,7 +56,7 @@ class UserApiTest {
         api.signup(userRegistrationRequest);
 
         var userAuthenticationRequest = UserSamples.sampleUserAuthenticationRequest();
-        var result = api.login(userAuthenticationRequest).getResponseBody();
+        var result = api.login(userAuthenticationRequest);
 
         requireNonNull(result);
         assertThatLoginResponseIsValid(userRegistrationRequest, result);
@@ -72,10 +72,10 @@ class UserApiTest {
 
     @Test
     void shouldGetCurrentUser() {
-        var response = api.signup(UserSamples.sampleUserRegistrationRequest()).getResponseBody();
+        var response = api.signup(UserSamples.sampleUserRegistrationRequest());
         requireNonNull(response);
 
-        var body = api.currentUser(response.getToken()).getResponseBody();
+        var body = api.currentUser(response.getToken());
 
         requireNonNull(body);
         assertThat(body.getUsername()).isEqualTo(response.getUsername());
@@ -84,11 +84,11 @@ class UserApiTest {
 
     @Test
     void shouldUpdateUser() {
-        var responseBody = api.signup(UserSamples.sampleUserRegistrationRequest()).getResponseBody();
+        var responseBody = api.signup(UserSamples.sampleUserRegistrationRequest());
         requireNonNull(responseBody);
 
         var updateUserRequest = UserSamples.sampleUpdateUserRequest();
-        var body = api.updateUser(responseBody.getToken(), updateUserRequest).getResponseBody();
+        var body = api.updateUser(responseBody.getToken(), updateUserRequest);
 
         requireNonNull(body);
         assertThatUserIsSavedAfterUpdate(updateUserRequest);
@@ -101,7 +101,7 @@ class UserApiTest {
         api.signup(request);
 
         var result = api.getProfile(request.getUsername());
-        var body = requireNonNull(result.getResponseBody());
+        var body = requireNonNull(result);
 
         assertThat(body.getUsername()).isEqualTo(request.getUsername());
         assertThat(body.isFollowing()).isFalse();
@@ -114,13 +114,13 @@ class UserApiTest {
                 .setEmail("testemail2@gmail.com")
                 .setUsername("testname2");
         api.signup(followeeRegistrationRequest);
-        var follower = api.signup(followerRegistrationRequest).getResponseBody();
+        var follower = api.signup(followerRegistrationRequest);
         assert follower != null;
         var followeeUsername = followeeRegistrationRequest.getUsername();
         var followerAuthToken = follower.getToken();
         api.follow(followeeUsername, followerAuthToken);
 
-        var profileDto = api.getProfile(followeeUsername, followerAuthToken).getResponseBody();
+        var profileDto = api.getProfile(followeeUsername, followerAuthToken);
 
         assert profileDto != null;
         assertThat(profileDto.getUsername()).isEqualTo(followeeUsername);
@@ -134,12 +134,12 @@ class UserApiTest {
                 .setEmail("testemail2@gmail.com")
                 .setUsername("testname2");
         api.signup(followeeRegistrationRequest);
-        var followerDto = api.signup(followerRegistrationRequest).getResponseBody();
+        var followerDto = api.signup(followerRegistrationRequest);
         assert followerDto != null;
         var followeeUsername = followeeRegistrationRequest.getUsername();
         var authToken = followerDto.getToken();
 
-        var profileDto = api.follow(followeeUsername, authToken).getResponseBody();
+        var profileDto = api.follow(followeeUsername, authToken);
 
         requireNonNull(profileDto);
         assertThat(profileDto.getUsername()).isEqualTo(followeeUsername);
@@ -157,7 +157,7 @@ class UserApiTest {
         var followeeUsername = followeeRegistrationRequest.getUsername();
         var authToken = followerDto.getToken();
 
-        var body = api.unfollow(followeeUsername, authToken).getResponseBody();
+        var body = api.unfollow(followeeUsername, authToken);
 
         assert body != null;
         assertThat(body.getUsername()).isEqualTo(followeeUsername);
@@ -175,11 +175,11 @@ class UserApiTest {
 
     private UserView prepareFollowerAndFollowee(UserRegistrationRequest followeeRegistrationRequest, UserRegistrationRequest followerRegistrationRequest) {
         api.signup(followeeRegistrationRequest);
-        var followerDto = api.signup(followerRegistrationRequest).getResponseBody();
+        var followerDto = api.signup(followerRegistrationRequest);
         assert followerDto != null;
         var followeeUsername1 = followeeRegistrationRequest.getUsername();
         var authToken1 = followerDto.getToken();
-        api.follow(followeeUsername1, authToken1).getResponseBody();
+        api.follow(followeeUsername1, authToken1);
         return followerDto;
     }
 

@@ -1,7 +1,13 @@
 package helpers.article;
 
+import com.realworld.springmongo.api.wrappers.ArticleWrapper;
+import com.realworld.springmongo.api.wrappers.ArticleWrapper.ArticleViewWrapper;
+import com.realworld.springmongo.api.wrappers.ArticleWrapper.CreateArticleRequestWrapper;
+import com.realworld.springmongo.api.wrappers.ArticleWrapper.UpdateArticleRequestWrapper;
+import com.realworld.springmongo.api.wrappers.CommentWrapper;
+import com.realworld.springmongo.api.wrappers.CommentWrapper.CommentViewWrapper;
+import com.realworld.springmongo.api.wrappers.CommentWrapper.CreateCommentRequestWrapper;
 import com.realworld.springmongo.article.dto.*;
-import com.realworld.springmongo.user.User;
 import com.realworld.springmongo.user.dto.UserView;
 import helpers.TokenHelper;
 import org.springframework.http.HttpHeaders;
@@ -20,14 +26,15 @@ public class ArticleApiSupport {
         this.client = client;
     }
 
-    public EntityExchangeResult<ArticleView> createArticle(CreateArticleRequest createArticleRequest, String authToken) {
-        return client.post()
+    public ArticleView createArticle(CreateArticleRequest createArticleRequest, String authToken) {
+        var result = client.post()
                 .uri("/api/articles")
                 .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
-                .bodyValue(createArticleRequest)
+                .bodyValue(new CreateArticleRequestWrapper(createArticleRequest))
                 .exchange()
-                .expectBody(ArticleView.class)
+                .expectBody(ArticleViewWrapper.class)
                 .returnResult();
+        return result.getResponseBody().getContent();
     }
 
     public EntityExchangeResult<MultipleArticlesView> findArticles(FindArticlesRequest request, String authToken) {
@@ -62,40 +69,43 @@ public class ArticleApiSupport {
                 .returnResult();
     }
 
-    public EntityExchangeResult<ArticleView> getArticle(String slug, String authToken) {
-        return client.get()
+    public ArticleView getArticle(String slug, String authToken) {
+        var result = client.get()
                 .uri("/api/articles/" + slug)
                 .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
                 .exchange()
-                .expectBody(ArticleView.class)
+                .expectBody(ArticleViewWrapper.class)
                 .returnResult();
+        return result.getResponseBody().getContent();
     }
 
     public EntityExchangeResult<MultipleArticlesView> findArticles(FindArticlesRequest request) {
         return findArticles(request, null);
     }
 
-    public EntityExchangeResult<ArticleView> updateArticle(String slug, UpdateArticleRequest updateArticleRequest, String authToken) {
-        return client.put()
+    public ArticleView updateArticle(String slug, UpdateArticleRequest updateArticleRequest, String authToken) {
+        var result = client.put()
                 .uri("/api/articles/" + slug)
                 .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
-                .bodyValue(updateArticleRequest)
+                .bodyValue(new UpdateArticleRequestWrapper(updateArticleRequest))
                 .exchange()
-                .expectBody(ArticleView.class)
+                .expectBody(ArticleViewWrapper.class)
                 .returnResult();
+        return result.getResponseBody().getContent();
     }
 
-    public EntityExchangeResult<CommentView> addComment(String articleSlug, CreateCommentRequest request, String authToken) {
-        return client.post()
+    public CommentView addComment(String articleSlug, CreateCommentRequest request, String authToken) {
+        var result = client.post()
                 .uri("/api/articles/" + articleSlug + "/comments")
-                .bodyValue(request)
+                .bodyValue(new CreateCommentRequestWrapper(request))
                 .header(HttpHeaders.AUTHORIZATION, TokenHelper.formatToken(authToken))
                 .exchange()
-                .expectBody(CommentView.class)
+                .expectBody(CommentViewWrapper.class)
                 .returnResult();
+        return result.getResponseBody().getContent();
     }
 
-    public EntityExchangeResult<CommentView> addComment(String articleSlug, String body, String authToken) {
+    public CommentView addComment(String articleSlug, String body, String authToken) {
         return addComment(articleSlug, new CreateCommentRequest(body), authToken);
     }
 
@@ -134,22 +144,24 @@ public class ArticleApiSupport {
                 .returnResult();
     }
 
-    public EntityExchangeResult<ArticleView> favoriteArticle(String articleSlug, UserView user) {
-        return client.post()
+    public ArticleView favoriteArticle(String articleSlug, UserView user) {
+        var result = client.post()
                 .uri("/api/articles/{slug}/favorite", articleSlug)
                 .headers(authHeader(user))
                 .exchange()
-                .expectBody(ArticleView.class)
+                .expectBody(ArticleViewWrapper.class)
                 .returnResult();
+        return result.getResponseBody().getContent();
     }
 
-    public EntityExchangeResult<ArticleView> unfavoriteArticle(String articleSlug, UserView user) {
-        return client.delete()
+    public ArticleView unfavoriteArticle(String articleSlug, UserView user) {
+        var result = client.delete()
                 .uri("/api/articles/{slug}/favorite", articleSlug)
                 .headers(authHeader(user))
                 .exchange()
-                .expectBody(ArticleView.class)
+                .expectBody(ArticleViewWrapper.class)
                 .returnResult();
+        return result.getResponseBody().getContent();
     }
 
 
