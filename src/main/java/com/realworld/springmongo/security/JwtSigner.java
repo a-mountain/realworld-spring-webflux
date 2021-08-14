@@ -33,8 +33,12 @@ public class JwtSigner implements UserTokenProvider {
     }
 
     private Date expirationDate() {
-        var expirationDate = System.currentTimeMillis() + jwtProperties.getSessionTime() * 1000L;
+        var expirationDate = System.currentTimeMillis() + getSessionTime();
         return new Date(expirationDate);
+    }
+
+    private long getSessionTime() {
+        return jwtProperties.getSessionTime() * 1000L;
     }
 
     @Override
