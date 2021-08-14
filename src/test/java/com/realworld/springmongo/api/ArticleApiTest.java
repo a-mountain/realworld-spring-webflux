@@ -236,6 +236,7 @@ public class ArticleApiTest {
         var favoritedArticle = articleApi.favoriteArticle(article.getSlug(), user);
         assertThat(article.getFavorited()).isFalse();
         assertThat(favoritedArticle.getFavorited()).isTrue();
+        assertThat(favoritedArticle.getFavoritesCount()).isEqualTo(1);
     }
 
     @Test
