@@ -1,26 +1,27 @@
 package com.realworld.springmongo.user;
 
-import com.realworld.springmongo.exceptions.InvalidRequestException;
+import com.realworld.springmongo.user.UserContextProvider.UserContext;
 import com.realworld.springmongo.user.dto.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-@Service
+@Component
 @RequiredArgsConstructor
-public class UserService {
+public class UserFacade {
 
     private final CredentialsService credentialsService;
     private final UserRepository userRepository;
     private final UserUpdater userUpdater;
+    private final UserContextProvider userContextProvider;
 
     public Mono<ProfileView> getProfile(String profileUsername, User viewer) {
-        return findUserByUsernameOrError(profileUsername)
+        return userRepository.findByUsernameOrError(profileUsername)
                 .map(user -> ProfileView.toProfileViewForViewer(user, viewer));
     }
 
     public Mono<ProfileView> getProfile(String profileUsername) {
-        return findUserByUsernameOrError(profileUsername)
+        return userRepository.findByUsernameOrError(profileUsername)
                 .map(user -> ProfileView.toProfileView(user, false));
     }
 
@@ -33,20 +34,20 @@ public class UserService {
     }
 
     public Mono<UserView> getCurrentUser() {
-        return credentialsService.getCurrentUserAndToken()
+        return userContextProvider.getCurrentUserContext()
                 .map(UserView::fromUserAndToken);
     }
 
-    public Mono<UserView> updateUser(UpdateUserRequest request, UserContext.UserAndToken userAndToken) {
-        var user = userAndToken.user();
-        var token = userAndToken.token();
+    public Mono<UserView> updateUser(UpdateUserRequest request, UserContext userContext) {
+        var user = userContext.user();
+        var token = userContext.token();
         return userUpdater.updateUser(request, user)
                 .flatMap(userRepository::save)
                 .map(it -> UserView.fromUserAndToken(it, token));
     }
 
     public Mono<ProfileView> follow(String username, User follower) {
-        return findUserByUsernameOrError(username)
+        return userRepository.findByUsernameOrError(username)
                 .flatMap(userToFollow -> {
                     follower.follow(userToFollow);
                     return userRepository.save(follower).thenReturn(userToFollow);
@@ -55,20 +56,11 @@ public class UserService {
     }
 
     public Mono<ProfileView> unfollow(String username, User follower) {
-        return findUserByUsernameOrError(username)
+        return userRepository.findByUsernameOrError(username)
                 .flatMap(userToUnfollow -> {
                     follower.unfollow(userToUnfollow);
                     return userRepository.save(follower).thenReturn(userToUnfollow);
                 })
                 .map(ProfileView::toUnfollowedProfileView);
-    }
-
-    private Mono<User> findUserByUsernameOrError(String username) {
-        return userRepository.findByUsername(username)
-                .switchIfEmpty(usernameNotFoundException());
-    }
-
-    private <T> Mono<T> usernameNotFoundException() {
-        return Mono.error(new InvalidRequestException("Username", "not found"));
     }
 }

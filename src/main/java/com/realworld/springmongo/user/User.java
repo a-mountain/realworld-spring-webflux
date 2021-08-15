@@ -4,6 +4,7 @@ import com.realworld.springmongo.article.Article;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Collections;
 import java.util.List;
 
 @Document
@@ -13,13 +14,13 @@ import java.util.List;
 @AllArgsConstructor
 public class User {
 
-    @EqualsAndHashCode.Include
     @Getter
+    @EqualsAndHashCode.Include
     private final String id;
 
-    @Getter
-    @Setter
-    List<String> followingIds;
+    private final List<String> followingIds;
+
+    private final List<String> favoriteArticleIds;
 
     @Getter
     @Setter
@@ -41,9 +42,13 @@ public class User {
     @Setter
     private String image;
 
-    @Getter
-    @Setter
-    private List<String> favoriteArticleIds;
+    public List<String> getFollowingIds() {
+        return Collections.unmodifiableList(followingIds);
+    }
+
+    public List<String> getFavoriteArticleIds() {
+        return Collections.unmodifiableList(favoriteArticleIds);
+    }
 
     public void follow(String userId) {
         followingIds.add(userId);

@@ -10,7 +10,7 @@ import static java.util.Optional.ofNullable;
 
 @Component
 @RequiredArgsConstructor
-public class UserUpdater {
+class UserUpdater {
 
     private final UserRepository userRepository;
     private final PasswordService passwordService;
@@ -42,12 +42,14 @@ public class UserUpdater {
             return Mono.empty();
         }
         return userRepository.existsByUsername(request.getUsername())
-                .doOnNext(existsByUsername -> {
-                    if (existsByUsername) {
-                        throw usernameAlreadyInUseException();
-                    }
-                    user.setUsername(request.getUsername());
-                });
+                .doOnNext(existsByUsername -> updateUsername(request, user, existsByUsername));
+    }
+
+    private void updateUsername(UpdateUserRequest request, User user, Boolean existsByUsername) {
+        if (existsByUsername) {
+            throw usernameAlreadyInUseException();
+        }
+        user.setUsername(request.getUsername());
     }
 
     private Mono<?> updateEmail(UpdateUserRequest request, User user) {
@@ -58,12 +60,14 @@ public class UserUpdater {
             return Mono.empty();
         }
         return userRepository.existsByEmail(request.getEmail())
-                .doOnNext(existsByEmail -> {
-                    if (existsByEmail) {
-                        throw emailAlreadyInUseException();
-                    }
-                    user.setEmail(request.getEmail());
-                });
+                .doOnNext(existsByEmail -> updateEmail(request, user, existsByEmail));
+    }
+
+    private void updateEmail(UpdateUserRequest request, User user, Boolean existsByEmail) {
+        if (existsByEmail) {
+            throw emailAlreadyInUseException();
+        }
+        user.setEmail(request.getEmail());
     }
 
     private InvalidRequestException usernameAlreadyInUseException() {

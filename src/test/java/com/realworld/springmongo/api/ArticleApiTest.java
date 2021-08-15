@@ -56,18 +56,6 @@ public class ArticleApiTest {
     }
 
     @Test
-    void name() {
-        var user = userApi.signup();
-        var user2 = userApi.signup(UserSamples.sampleUserRegistrationRequest()
-                .setEmail("user2@gmail.com")
-                .setUsername("user2"));
-        articleApi.createArticle(ArticleSamples.sampleCreateArticleRequest(), user.getToken());
-        articleApi.createArticle(ArticleSamples.sampleCreateArticleRequest(), user2.getToken());
-        var articles = articleApi.findArticles(new FindArticlesRequest(), user2.getToken());
-        System.out.println("articles = " + articles);
-    }
-
-    @Test
     void shouldCreateArticle() {
         var user = userApi.signup();
         var createArticleRequest = ArticleSamples.sampleCreateArticleRequest();

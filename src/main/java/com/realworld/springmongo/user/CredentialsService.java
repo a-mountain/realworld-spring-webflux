@@ -1,12 +1,10 @@
 package com.realworld.springmongo.user;
 
 import com.realworld.springmongo.exceptions.InvalidRequestException;
-import com.realworld.springmongo.security.TokenPrincipal;
 import com.realworld.springmongo.user.dto.UserAuthenticationRequest;
 import com.realworld.springmongo.user.dto.UserRegistrationRequest;
 import com.realworld.springmongo.user.dto.UserView;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -14,52 +12,17 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class CredentialsService implements UserContext {
+class CredentialsService {
 
     private final UserRepository userRepository;
     private final PasswordService passwordService;
     private final UserTokenProvider tokenProvider;
 
-    @Override
-    public Mono<User> getCurrentUserOrEmpty() {
-        return getCurrentUserAndToken()
-                .map(UserAndToken::user);
-    }
-
-    @Override
-    public Mono<UserAndToken> getCurrentUserAndToken() {
-        return ReactiveSecurityContextHolder.getContext()
-                .flatMap(context -> {
-                    var authentication = context.getAuthentication();
-                    if (authentication == null) {
-                        return Mono.empty();
-                    }
-                    var tokenPrincipal = (TokenPrincipal) authentication.getPrincipal();
-                    return userRepository
-                            .findById(tokenPrincipal.userId())
-                            .map(user -> new UserContext.UserAndToken(user, tokenPrincipal.token()));
-                });
-    }
-
     public Mono<UserView> login(UserAuthenticationRequest request) {
         var email = request.getEmail();
         var password = request.getPassword();
-        return userRepository.findByEmail(email)
-                .switchIfEmpty(Mono.error(new InvalidRequestException("Email", "not found")))
+        return userRepository.findByEmailOrError(email)
                 .map(user -> loginUser(password, user));
-    }
-
-    private UserView loginUser(String password, User user) {
-        var encodedPassword = user.getEncodedPassword();
-        if (!passwordService.matchesRowPasswordWithEncodedPassword(password, encodedPassword)) {
-            throw new InvalidRequestException("Password", "invalid");
-        }
-        return createAuthenticationResponse(user);
-    }
-
-    private UserView createAuthenticationResponse(User user) {
-        var token = tokenProvider.getToken(user.getId());
-        return UserView.fromUserAndToken(user, token);
     }
 
     public Mono<UserView> signup(UserRegistrationRequest request) {
@@ -76,6 +39,19 @@ public class CredentialsService implements UserContext {
                     }
                     return registerNewUser(request);
                 });
+    }
+
+    private UserView loginUser(String password, User user) {
+        var encodedPassword = user.getEncodedPassword();
+        if (!passwordService.matchesRowPasswordWithEncodedPassword(password, encodedPassword)) {
+            throw new InvalidRequestException("Password", "invalid");
+        }
+        return createAuthenticationResponse(user);
+    }
+
+    private UserView createAuthenticationResponse(User user) {
+        var token = tokenProvider.getToken(user.getId());
+        return UserView.fromUserAndToken(user, token);
     }
 
     private Mono<UserView> registerNewUser(UserRegistrationRequest request) {

@@ -3,6 +3,7 @@ package com.realworld.springmongo.user;
 import com.realworld.springmongo.exceptions.InvalidRequestException;
 import com.realworld.springmongo.security.JwtProperties;
 import com.realworld.springmongo.security.JwtSigner;
+import com.realworld.springmongo.user.UserContextProvider.UserContext;
 import helpers.user.UserSamples;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -14,11 +15,12 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-class UserServiceTest {
+class UserFacadeTest {
 
-    static UserService service;
+    static UserFacade service;
     static PasswordService passwordService = new PasswordService();
     static UserRepository userRepository = Mockito.mock(UserRepository.class);
+    static UserContextProvider userContextProvider = Mockito.mock(UserContextProvider.class);
 
     @BeforeAll
     static void beforeAll() {
@@ -26,7 +28,7 @@ class UserServiceTest {
         UserTokenProvider tokenProvider = signer::generateToken;
         var credentialsService = new CredentialsService(userRepository, passwordService, tokenProvider);
         var userUpdater = new UserUpdater(userRepository, passwordService);
-        service = new UserService(credentialsService, userRepository, userUpdater);
+        service = new UserFacade(credentialsService, userRepository, userUpdater, userContextProvider);
     }
 
     @Test
@@ -56,7 +58,7 @@ class UserServiceTest {
 
     @Test
     void shouldThrowErrorWhenLoginWithUnregisteredUser() {
-        when(userRepository.findByEmail(Mockito.any())).thenReturn(Mono.empty());
+        when(userRepository.findByEmailOrError(Mockito.any())).thenReturn(Mono.error(new InvalidRequestException("Email", "not found")));
 
         var userAuthenticationRequest = UserSamples.sampleUserAuthenticationRequest();
         var throwable = catchThrowable(() -> service.login(userAuthenticationRequest).block());
@@ -69,7 +71,7 @@ class UserServiceTest {
     @Test
     void shouldThrowErrorWhenWrongPassword() {
         var user = UserSamples.sampleUser(passwordService).build();
-        when(userRepository.findByEmail(anyString())).thenReturn(Mono.just(user));
+        when(userRepository.findByEmailOrError(anyString())).thenReturn(Mono.just(user));
 
         var userAuthenticationRequest = UserSamples.sampleUserAuthenticationRequest()
                 .setPassword("not default sample password");
@@ -88,7 +90,7 @@ class UserServiceTest {
         when(userRepository.findById(anyString())).thenReturn(Mono.just(user));
 
         var updateUserRequest = UserSamples.sampleUpdateUserRequest();
-        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, new UserContext.UserAndToken(user, "token")).block());
+        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, new UserContext(user, "token")).block());
 
         assertThat(throwable)
                 .isInstanceOf(InvalidRequestException.class)
@@ -103,7 +105,7 @@ class UserServiceTest {
         when(userRepository.findById(anyString())).thenReturn(Mono.just(user));
 
         var updateUserRequest = UserSamples.sampleUpdateUserRequest();
-        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, new UserContext.UserAndToken(user, "token")).block());
+        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, new UserContext(user, "token")).block());
 
         assertThat(throwable)
                 .isInstanceOf(InvalidRequestException.class)

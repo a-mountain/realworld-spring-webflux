@@ -1,6 +1,7 @@
 package com.realworld.springmongo.article.repository;
 
 import com.realworld.springmongo.article.Article;
+import com.realworld.springmongo.exceptions.InvalidRequestException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
@@ -16,9 +17,14 @@ public interface ArticleRepository extends ReactiveMongoRepository<Article, Stri
 
     Mono<Article> findBySlug(String slug);
 
+    Mono<Article> deleteArticleBySlug(String slug);
+
     default Flux<Article> findMostRecentArticlesByAuthorIds(Collection<String> authorId, int offset, int limit) {
         return findMostRecentByAuthorIdIn(authorId, OffsetBasedPageable.of(limit, offset, MOST_RECENT_SORT));
     }
 
-    Mono<Article> deleteArticleBySlug(String slug);
+    default Mono<Article> findBySlugOrError(String slug) {
+        return findBySlug(slug)
+                .switchIfEmpty(Mono.error(new InvalidRequestException("Article", "not found")));
+    }
 }
