@@ -45,7 +45,7 @@ class UserUpdater {
                 .doOnNext(existsByUsername -> updateUsername(request, user, existsByUsername));
     }
 
-    private void updateUsername(UpdateUserRequest request, User user, Boolean existsByUsername) {
+    private void updateUsername(UpdateUserRequest request, User user, boolean existsByUsername) {
         if (existsByUsername) {
             throw usernameAlreadyInUseException();
         }
@@ -63,7 +63,7 @@ class UserUpdater {
                 .doOnNext(existsByEmail -> updateEmail(request, user, existsByEmail));
     }
 
-    private void updateEmail(UpdateUserRequest request, User user, Boolean existsByEmail) {
+    private void updateEmail(UpdateUserRequest request, User user, boolean existsByEmail) {
         if (existsByEmail) {
             throw emailAlreadyInUseException();
         }

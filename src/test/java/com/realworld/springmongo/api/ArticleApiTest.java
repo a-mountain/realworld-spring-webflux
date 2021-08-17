@@ -28,7 +28,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ArticleApiTest {
+class ArticleApiTest {
 
     @Autowired
     WebTestClient client;
@@ -169,7 +169,7 @@ public class ArticleApiTest {
         articleApi.deleteArticle(slug, user.getToken());
 
         var articlesCount = articleRepository.count().block();
-        assertThat(articlesCount).isEqualTo(0L);
+        assertThat(articlesCount).isZero();
     }
 
     @Test

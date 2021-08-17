@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @WebFluxTest(controllers = {SecurityTest.Controller.class})
 @ImportAppSecurity
-public class SecurityTest {
+class SecurityTest {
 
     @Autowired
     WebTestClient client;

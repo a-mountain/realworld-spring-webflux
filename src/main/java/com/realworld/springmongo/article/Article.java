@@ -18,10 +18,10 @@ import static java.util.Optional.ofNullable;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Article {
 
-    public static final String CREATED_AT = "createdAt";
-    public static final String ID = "id";
-    public static final String AUTHOR_ID = "authorId";
-    public static final String TAGS = "tags";
+    public static final String CREATED_AT_FIELD_NAME = "createdAt";
+    public static final String ID_FIELD_NAME = "id";
+    public static final String AUTHOR_ID_FIELD_NAME = "authorId";
+    public static final String TAGS_FIELD_NAME = "tags";
 
     @Getter
     @EqualsAndHashCode.Include

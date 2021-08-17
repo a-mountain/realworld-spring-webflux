@@ -15,7 +15,7 @@ public class TagListView {
     List<String> tags;
 
     public static TagListView of(List<Tag> tags) {
-        var rowTags = tags.stream().map(Tag::getTag).toList();
+        var rowTags = tags.stream().map(Tag::getTagName).toList();
         return new TagListView()
                 .setTags(rowTags);
     }

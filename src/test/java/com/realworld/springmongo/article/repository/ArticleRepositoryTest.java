@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -191,7 +194,6 @@ class ArticleRepositoryTest {
                     .block();
 
             assert actual != null;
-            assertThat(actual).hasSize(5);
             assertThat(actual).isEqualTo(expected);
         }
     }
@@ -203,8 +205,11 @@ class ArticleRepositoryTest {
     private List<Article> createArticles(int size, ArticleConfigurer articleConfigurer) {
         var articles = IntStream.range(0, size)
                 .mapToObj(i -> {
-                    sleep();
-                    var article = ArticleSamples.sampleArticle().id(String.valueOf(i));
+                    var time = Instant.now().plus(i, ChronoUnit.SECONDS);
+                    var article = ArticleSamples.sampleArticle()
+                            .createdAt(time)
+                            .updatedAt(time)
+                            .id(String.valueOf(i));
                     articleConfigurer.configure(article, i);
                     return article.build();
                 })
@@ -213,13 +218,6 @@ class ArticleRepositoryTest {
         return articles;
     }
 
-    private void sleep() {
-        try {
-            Thread.sleep(1);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 
     @FunctionalInterface
     interface ArticleConfigurer {

@@ -33,14 +33,14 @@ public class ArticleManualRepositoryImpl implements ArticleManualRepository {
     }
 
     private Criteria authorIdEquals(String it) {
-        return where(Article.AUTHOR_ID).is(it);
+        return where(Article.AUTHOR_ID_FIELD_NAME).is(it);
     }
 
     private Criteria tagsContains(String it) {
-        return where(Article.TAGS).all(it);
+        return where(Article.TAGS_FIELD_NAME).all(it);
     }
 
     private Criteria isFavoriteArticleByUser(User it) {
-        return where(Article.ID).in(it.getFavoriteArticleIds());
+        return where(Article.ID_FIELD_NAME).in(it.getFavoriteArticleIds());
     }
 }

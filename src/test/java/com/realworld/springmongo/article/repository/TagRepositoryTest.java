@@ -21,8 +21,8 @@ class TagRepositoryTest {
     void name() {
         var tags = List.of("tag1", "tag1", "tag2", "tag2", "tag3");
         var expectedTags = Set.of("tag1", "tag2", "tag3");
-        var returnedTags = tagRepository.saveAllTags(tags).map(Tag::getTag).collectList().block();
-        var allTags = tagRepository.findAll().map(Tag::getTag).collectList().block();
+        var returnedTags = tagRepository.saveAllTags(tags).map(Tag::getTagName).collectList().block();
+        var allTags = tagRepository.findAll().map(Tag::getTagName).collectList().block();
         assertThat(new HashSet<>(returnedTags)).isEqualTo(expectedTags);
         assertThat(new HashSet<>(allTags)).isEqualTo(expectedTags);
     }

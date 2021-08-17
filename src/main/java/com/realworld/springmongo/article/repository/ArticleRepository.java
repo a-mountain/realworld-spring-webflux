@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 import java.util.Collection;
 
 public interface ArticleRepository extends ReactiveMongoRepository<Article, String>, ArticleManualRepository {
-    Sort MOST_RECENT_SORT = Sort.by(Article.CREATED_AT).descending();
+    Sort MOST_RECENT_SORT = Sort.by(Article.CREATED_AT_FIELD_NAME).descending();
 
     Flux<Article> findMostRecentByAuthorIdIn(Collection<String> authorId, Pageable pageable);
 

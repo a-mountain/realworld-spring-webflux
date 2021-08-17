@@ -16,7 +16,7 @@ public class Tag {
     private String id;
 
     @Indexed(unique = true)
-    private final String tag;
+    private final String tagName;
 
     public static Tag of(String tag) {
         return new Tag(null, tag);
