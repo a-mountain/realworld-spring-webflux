@@ -1,0 +1,11 @@
+version: '3'
+services:
+  database:
+    image: 'mongo'
+    container_name: 'mongo-container-realworld'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 1234
+      MONGO_INITDB_DATABASE: realworld-db
+    ports:
+      - 27017:27017
