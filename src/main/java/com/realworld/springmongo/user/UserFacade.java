@@ -1,6 +1,6 @@
 package com.realworld.springmongo.user;
 
-import com.realworld.springmongo.user.UserContextProvider.UserContext;
+import com.realworld.springmongo.user.UserSessionProvider.UserSession;
 import com.realworld.springmongo.user.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,6 @@ public class UserFacade {
     private final CredentialsService credentialsService;
     private final UserRepository userRepository;
     private final UserUpdater userUpdater;
-    private final UserContextProvider userContextProvider;
 
     public Mono<ProfileView> getProfile(String profileUsername, User viewer) {
         return userRepository.findByUsernameOrError(profileUsername)
@@ -22,7 +21,7 @@ public class UserFacade {
 
     public Mono<ProfileView> getProfile(String profileUsername) {
         return userRepository.findByUsernameOrError(profileUsername)
-                .map(user -> ProfileView.toProfileView(user, false));
+                .map(ProfileView::toUnfollowedProfileView);
     }
 
     public Mono<UserView> signup(UserRegistrationRequest request) {
@@ -33,14 +32,9 @@ public class UserFacade {
         return credentialsService.login(request);
     }
 
-    public Mono<UserView> getCurrentUser() {
-        return userContextProvider.getCurrentUserContext()
-                .map(UserView::fromUserAndToken);
-    }
-
-    public Mono<UserView> updateUser(UpdateUserRequest request, UserContext userContext) {
-        var user = userContext.user();
-        var token = userContext.token();
+    public Mono<UserView> updateUser(UpdateUserRequest request, UserSession userSession) {
+        var user = userSession.user();
+        var token = userSession.token();
         return userUpdater.updateUser(request, user)
                 .flatMap(userRepository::save)
                 .map(it -> UserView.fromUserAndToken(it, token));
@@ -52,7 +46,7 @@ public class UserFacade {
                     follower.follow(userToFollow);
                     return userRepository.save(follower).thenReturn(userToFollow);
                 })
-                .map(ProfileView::toFollowedProfileViewOf);
+                .map(ProfileView::toFollowedProfileView);
     }
 
     public Mono<ProfileView> unfollow(String username, User follower) {

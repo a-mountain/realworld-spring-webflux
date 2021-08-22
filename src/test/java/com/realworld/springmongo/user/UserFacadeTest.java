@@ -3,7 +3,7 @@ package com.realworld.springmongo.user;
 import com.realworld.springmongo.exceptions.InvalidRequestException;
 import com.realworld.springmongo.security.JwtProperties;
 import com.realworld.springmongo.security.JwtSigner;
-import com.realworld.springmongo.user.UserContextProvider.UserContext;
+import com.realworld.springmongo.user.UserSessionProvider.UserSession;
 import helpers.user.UserSamples;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,6 @@ class UserFacadeTest {
     static UserFacade service;
     static PasswordService passwordService = new PasswordService();
     static UserRepository userRepository = Mockito.mock(UserRepository.class);
-    static UserContextProvider userContextProvider = Mockito.mock(UserContextProvider.class);
 
     @BeforeAll
     static void beforeAll() {
@@ -28,7 +27,7 @@ class UserFacadeTest {
         UserTokenProvider tokenProvider = signer::generateToken;
         var credentialsService = new CredentialsService(userRepository, passwordService, tokenProvider);
         var userUpdater = new UserUpdater(userRepository, passwordService);
-        service = new UserFacade(credentialsService, userRepository, userUpdater, userContextProvider);
+        service = new UserFacade(credentialsService, userRepository, userUpdater);
     }
 
     @Test
@@ -90,7 +89,7 @@ class UserFacadeTest {
         when(userRepository.findById(anyString())).thenReturn(Mono.just(user));
 
         var updateUserRequest = UserSamples.sampleUpdateUserRequest();
-        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, new UserContext(user, "token")).block());
+        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, new UserSession(user, "token")).block());
 
         assertThat(throwable)
                 .isInstanceOf(InvalidRequestException.class)
@@ -105,7 +104,7 @@ class UserFacadeTest {
         when(userRepository.findById(anyString())).thenReturn(Mono.just(user));
 
         var updateUserRequest = UserSamples.sampleUpdateUserRequest();
-        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, new UserContext(user, "token")).block());
+        var throwable = catchThrowable(() -> service.updateUser(updateUserRequest, new UserSession(user, "token")).block());
 
         assertThat(throwable)
                 .isInstanceOf(InvalidRequestException.class)

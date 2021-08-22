@@ -4,8 +4,8 @@ import com.realworld.springmongo.exceptions.InvalidRequestException;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TokenFormatter {
-    public String getRowToken(String authorizationHeader) {
+public class TokenExtractor {
+    public String extractToken(String authorizationHeader) {
         if (!authorizationHeader.startsWith("Token ")) {
             throw new InvalidRequestException("Authorization Header", "has no `Token` prefix");
         }

@@ -18,19 +18,11 @@ public class ProfileView {
 
     boolean following;
 
-    public static ProfileView toProfileView(User userToMakeView, boolean following) {
-        return new ProfileView()
-                .setUsername(userToMakeView.getUsername())
-                .setBio(userToMakeView.getBio())
-                .setImage(userToMakeView.getImage())
-                .setFollowing(following);
-    }
-
     public static ProfileView toUnfollowedProfileView(User userToMakeView) {
         return toProfileView(userToMakeView, false);
     }
 
-    public static ProfileView toFollowedProfileViewOf(User userToMakeView) {
+    public static ProfileView toFollowedProfileView(User userToMakeView) {
         return toProfileView(userToMakeView, true);
     }
 
@@ -39,6 +31,15 @@ public class ProfileView {
     }
 
     public static ProfileView toProfileViewForViewer(User userToMakeView, User viewer) {
-        return toProfileView(userToMakeView, userToMakeView.isFollower(viewer));
+        var following = userToMakeView.isFollower(viewer);
+        return toProfileView(userToMakeView, following);
+    }
+
+    private static ProfileView toProfileView(User userToMakeView, boolean following) {
+        return new ProfileView()
+                .setUsername(userToMakeView.getUsername())
+                .setBio(userToMakeView.getBio())
+                .setImage(userToMakeView.getImage())
+                .setFollowing(following);
     }
 }

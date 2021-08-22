@@ -2,9 +2,9 @@ package com.realworld.springmongo.user;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class PasswordService {
     private final PasswordEncoder encoder = new BCryptPasswordEncoder();
 

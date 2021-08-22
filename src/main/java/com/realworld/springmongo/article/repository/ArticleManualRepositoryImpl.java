@@ -13,7 +13,7 @@ import static java.util.Optional.ofNullable;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 @RequiredArgsConstructor
-public class ArticleManualRepositoryImpl implements ArticleManualRepository {
+class ArticleManualRepositoryImpl implements ArticleManualRepository {
 
     private final ReactiveMongoTemplate mongoTemplate;
 

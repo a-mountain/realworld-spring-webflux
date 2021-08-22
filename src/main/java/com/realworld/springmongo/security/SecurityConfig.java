@@ -28,6 +28,9 @@ public class SecurityConfig {
                 .build();
     }
 
+    /**
+     * Moving endpoints config to particular interface allow to change endpoints in tests.
+     */
     @Bean
     EndpointsSecurityConfig endpointsConfig() {
         return http -> http

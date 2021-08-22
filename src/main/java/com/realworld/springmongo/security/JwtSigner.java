@@ -28,7 +28,6 @@ public class JwtSigner implements UserTokenProvider {
                 .signWith(keyPair.getPrivate(), SignatureAlgorithm.RS256)
                 .setSubject(userId)
                 .setExpiration(expirationDate())
-                .setIssuer("identity")
                 .compact();
     }
 

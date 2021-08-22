@@ -31,10 +31,10 @@ class ArticlesFinder {
                 .setOffset(offset)
                 .setLimit(limit)
                 .setTag(tag);
-        Mono<?> addToRequestAuthorId = addToRequestAuthorId(author, request);
-        Mono<?> addToRequestFavoritedBy = addToRequestFavoritedBy(favoritedByUser, request);
-        return addToRequestAuthorId
-                .then(addToRequestFavoritedBy)
+        Mono<?> addAuthorIdToRequest = addToRequestAuthorId(author, request);
+        Mono<?> addFavoritedByToRequest = addToRequestFavoritedBy(favoritedByUser, request);
+        return addAuthorIdToRequest
+                .then(addFavoritedByToRequest)
                 .thenReturn(request);
     }
 

@@ -28,6 +28,20 @@ public class Article {
     private final String id;
 
     @Getter
+    @CreatedDate
+    private final Instant createdAt;
+
+    @Getter
+    @LastModifiedDate
+    private final Instant updatedAt;
+
+    @Getter
+    private final List<String> tags;
+
+    @Getter
+    private final List<Comment> comments;
+
+    @Getter
     private String slug;
 
     @Getter
@@ -42,37 +56,23 @@ public class Article {
     private String body;
 
     @Getter
-    @CreatedDate
-    private final Instant createdAt;
-
-    @Getter
-    @LastModifiedDate
-    private final Instant updatedAt;
-
-    @Getter
     private Integer favoritesCount;
 
     @Getter
     @Setter
     private String authorId;
 
-    @Getter
-    private final List<String> tags;
-
-    @Getter
-    private final List<Comment> comments;
-
     @Builder
-    public Article(String id,
-                   String title,
-                   String description,
-                   String body,
-                   Instant createdAt,
-                   Instant updatedAt,
-                   Integer favoritesCount,
-                   String authorId,
-                   List<String> tags,
-                   List<Comment> comments
+    Article(String id,
+            String title,
+            String description,
+            String body,
+            Instant createdAt,
+            Instant updatedAt,
+            Integer favoritesCount,
+            String authorId,
+            List<String> tags,
+            List<Comment> comments
     ) {
         this.id = id;
         this.title = title;

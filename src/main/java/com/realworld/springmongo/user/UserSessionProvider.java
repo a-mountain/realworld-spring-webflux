@@ -8,16 +8,15 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public class UserContextProvider {
+public class UserSessionProvider {
 
     private final UserRepository userRepository;
 
     public Mono<User> getCurrentUserOrEmpty() {
-        return getCurrentUserContext()
-                .map(UserContext::user);
+        return getCurrentUserSessionOrEmpty().map(UserSession::user);
     }
 
-    public Mono<UserContext> getCurrentUserContext() {
+    public Mono<UserSession> getCurrentUserSessionOrEmpty() {
         return ReactiveSecurityContextHolder.getContext()
                 .flatMap(context -> {
                     var authentication = context.getAuthentication();
@@ -27,10 +26,10 @@ public class UserContextProvider {
                     var tokenPrincipal = (TokenPrincipal) authentication.getPrincipal();
                     return userRepository
                             .findById(tokenPrincipal.userId())
-                            .map(user -> new UserContext(user, tokenPrincipal.token()));
+                            .map(user -> new UserSession(user, tokenPrincipal.token()));
                 });
     }
 
-    public record UserContext(User user, String token) {
+    public record UserSession(User user, String token) {
     }
 }

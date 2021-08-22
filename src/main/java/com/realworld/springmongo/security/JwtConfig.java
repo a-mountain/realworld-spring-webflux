@@ -9,7 +9,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
-import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -19,17 +18,16 @@ import java.util.List;
 public class JwtConfig {
 
     @Bean
-    ServerAuthenticationConverter jwtServerAuthenticationConverter(TokenFormatter tokenFormatter) {
-        return exchange -> Mono.justOrEmpty(exchange)
-                .flatMap(ex -> Mono.justOrEmpty(getAuthorizationHeaders(exchange)))
-                .filter(header -> !header.isEmpty())
-                .map(headers -> tokenFormatter.getRowToken(headers.get(0)))
-                .map(token -> new UsernamePasswordAuthenticationToken(token, token));
-
-    }
-
-    private List<String> getAuthorizationHeaders(ServerWebExchange exchange) {
-        return exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);
+    ServerAuthenticationConverter jwtServerAuthenticationConverter(TokenExtractor tokenExtractor) {
+        return ex -> Mono.justOrEmpty(ex).flatMap(exchange -> {
+            var headers = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);
+            if (headers == null || headers.isEmpty()) {
+                return Mono.empty();
+            }
+            var authHeader = headers.get(0);
+            var token = tokenExtractor.extractToken(authHeader);
+            return Mono.just(new UsernamePasswordAuthenticationToken(token, token));
+        });
     }
 
     @Bean
