@@ -42,5 +42,5 @@ The quality & architecture of this Conduit implementation reflect something simi
 # Getting started
 You need Java 16 installed.
 ```
- ./gradlew bootRun.
+./gradlew bootRun
 ```
