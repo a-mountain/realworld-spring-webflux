@@ -5,6 +5,7 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.lang.Nullable;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -67,15 +68,15 @@ public class Article {
             String title,
             String description,
             String body,
-            Instant createdAt,
+            @Nullable Instant createdAt,
             Instant updatedAt,
             Integer favoritesCount,
             String authorId,
-            List<String> tags,
-            List<Comment> comments
+            @Nullable List<String> tags,
+            @Nullable List<Comment> comments
     ) {
         this.id = id;
-        this.title = title;
+        setTitle(title);
         this.description = description;
         this.body = body;
         this.createdAt = ofNullable(createdAt).orElse(Instant.now());
@@ -84,7 +85,6 @@ public class Article {
         this.authorId = authorId;
         this.tags = ofNullable(tags).orElse(new ArrayList<>());
         this.comments = ofNullable(comments).orElse(new ArrayList<>());
-        updateSlug();
     }
 
     public void incrementFavoritesCount() {
@@ -105,17 +105,13 @@ public class Article {
 
     public void setTitle(String title) {
         this.title = title;
-        updateSlug();
+        this.slug = toSlug(title);
     }
 
     public Optional<Comment> getCommentById(String commentId) {
         return comments.stream()
                 .filter(comment -> comment.getId().equals(commentId))
                 .findFirst();
-    }
-
-    private void updateSlug() {
-        this.slug = toSlug(title);
     }
 
     private String toSlug(String title) {
