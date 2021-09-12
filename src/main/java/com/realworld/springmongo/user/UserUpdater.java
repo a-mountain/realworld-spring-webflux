@@ -22,10 +22,8 @@ class UserUpdater {
                 .ifPresent(user::setImage);
         ofNullable(request.getPassword())
                 .ifPresent(password -> updatePassword(password, user));
-        Mono<?> updateUsername = updateUsername(request, user);
-        Mono<?> updateEmail = updateEmail(request, user);
-        return updateUsername
-                .then(updateEmail)
+        return updateUsername(request, user)
+                .then(updateEmail(request, user))
                 .thenReturn(user);
     }
 

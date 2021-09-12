@@ -26,12 +26,12 @@ class CommentService {
     private final UserRepository userRepository;
 
     public Mono<CommentView> addComment(String slug, CreateCommentRequest request, User currentUser) {
-        return articleRepository.findBySlugOrError(slug)
+        return articleRepository.findBySlugOrFail(slug)
                 .flatMap(article -> addComment(request, currentUser, article));
     }
 
     public Mono<Void> deleteComment(String commentId, String slug, User user) {
-        return articleRepository.findBySlugOrError(slug)
+        return articleRepository.findBySlugOrFail(slug)
                 .flatMap(article -> article.getCommentById(commentId)
                         .map(comment -> deleteComment(article, comment, user))
                         .orElse(Mono.empty())

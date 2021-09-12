@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
 @Document
@@ -69,8 +70,8 @@ public class Article {
             String description,
             String body,
             @Nullable Instant createdAt,
-            Instant updatedAt,
-            Integer favoritesCount,
+            @Nullable Instant updatedAt,
+            @Nullable Integer favoritesCount,
             String authorId,
             @Nullable List<String> tags,
             @Nullable List<Comment> comments
@@ -80,8 +81,8 @@ public class Article {
         this.description = description;
         this.body = body;
         this.createdAt = ofNullable(createdAt).orElse(Instant.now());
-        this.updatedAt = updatedAt;
-        this.favoritesCount = favoritesCount;
+        this.updatedAt = ofNullable(updatedAt).orElse(createdAt);
+        this.favoritesCount = ofNullable(favoritesCount).orElse(0);
         this.authorId = authorId;
         this.tags = ofNullable(tags).orElse(new ArrayList<>());
         this.comments = ofNullable(comments).orElse(new ArrayList<>());

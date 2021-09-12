@@ -12,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -41,7 +40,7 @@ class ArticleRepositoryTest {
                     .filter(article -> authorIds.contains(article.getAuthorId()))
                     .sorted(mostRecent)
                     .toList();
-            var actual = articleRepository.findMostRecentArticlesByAuthorIds(authorIds, 0, 20).collectList().block();
+            var actual = articleRepository.findNewestArticlesByAuthorIds(authorIds, 0, 20).collectList().block();
             assertThat(actual).isEqualTo(expected);
         }
 
@@ -56,7 +55,7 @@ class ArticleRepositoryTest {
                     .skip(offset)
                     .limit(limit)
                     .toList();
-            var actual = articleRepository.findMostRecentArticlesByAuthorIds(authorIds, offset, limit).collectList().block();
+            var actual = articleRepository.findNewestArticlesByAuthorIds(authorIds, offset, limit).collectList().block();
             assertThat(actual).isEqualTo(expected);
         }
     }

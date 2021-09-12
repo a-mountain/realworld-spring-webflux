@@ -21,7 +21,7 @@ class CredentialsService {
     public Mono<UserView> login(UserAuthenticationRequest request) {
         var email = request.getEmail();
         var password = request.getPassword();
-        return userRepository.findByEmailOrError(email)
+        return userRepository.findByEmailOrFail(email)
                 .map(user -> loginUser(password, user));
     }
 
