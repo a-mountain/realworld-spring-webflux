@@ -30,6 +30,7 @@ The quality & architecture of this Conduit implementation reflect something simi
 - api - web layer which contains enpoints and web specific dto.
 - article - contains all features connected with articles.
 - exceptions - exceptions and exception handlers.
+- lib - helpers, system code
 - security - security settings.
 - user - contains all features connected with users.
 - validation - custom validators and validation settings.
