@@ -28,7 +28,6 @@ public class Comment {
     private String authorId;
 
     @Getter
-    @CreatedDate
     private final Instant createdAt;
 
     @Getter

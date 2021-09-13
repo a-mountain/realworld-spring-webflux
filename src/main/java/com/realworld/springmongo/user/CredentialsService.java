@@ -28,13 +28,13 @@ class CredentialsService {
     public Mono<UserView> signup(UserRegistrationRequest request) {
         return userRepository.existsByEmail(request.getEmail())
                 .flatMap(existsByEmail -> {
-                    if (existsByEmail.equals(true)) {
+                    if (existsByEmail) {
                         return Mono.error(emailAlreadyInUseException());
                     }
                     return userRepository.existsByUsername(request.getUsername());
                 })
                 .flatMap(existsByUsername -> {
-                    if (existsByUsername.equals(true)) {
+                    if (existsByUsername) {
                         return Mono.error(usernameAlreadyInUseException());
                     }
                     return registerNewUser(request);

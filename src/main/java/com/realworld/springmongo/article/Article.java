@@ -30,7 +30,6 @@ public class Article {
     private final String id;
 
     @Getter
-    @CreatedDate
     private final Instant createdAt;
 
     @Getter
