@@ -3,15 +3,17 @@ package com.realworld.springmongo.user;
 import com.realworld.springmongo.article.Article;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.lang.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
+
 @Document
-@Builder
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class User {
 
     @Getter
@@ -36,11 +38,33 @@ public class User {
 
     @Getter
     @Setter
+    @Nullable
     private String bio;
 
     @Getter
     @Setter
+    @Nullable
     private String image;
+
+    @Builder
+    public User(String id,
+                @Nullable List<String> followingIds,
+                @Nullable List<String> favoriteArticleIds,
+                String username,
+                String encodedPassword,
+                String email,
+                @Nullable String bio,
+                @Nullable String image
+    ) {
+        this.id = id;
+        this.followingIds = ofNullable(followingIds).orElse(new ArrayList<>());
+        this.favoriteArticleIds = ofNullable(favoriteArticleIds).orElse(new ArrayList<>());
+        this.username = username;
+        this.encodedPassword = encodedPassword;
+        this.email = email;
+        this.bio = bio;
+        this.image = image;
+    }
 
     public List<String> getFollowingIds() {
         return Collections.unmodifiableList(followingIds);

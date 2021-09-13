@@ -30,8 +30,6 @@ public class UserRegistrationRequest {
                 .encodedPassword(encodedPassword)
                 .email(email)
                 .username(username)
-                .followingIds(new ArrayList<>())
-                .favoriteArticleIds(new ArrayList<>())
                 .build();
     }
 }

@@ -57,7 +57,7 @@ class UserFacadeTest {
 
     @Test
     void shouldThrowErrorWhenLoginWithUnregisteredUser() {
-        when(userRepository.findByEmailOrError(Mockito.any())).thenReturn(Mono.error(new InvalidRequestException("Email", "not found")));
+        when(userRepository.findByEmailOrFail(Mockito.any())).thenReturn(Mono.error(new InvalidRequestException("Email", "not found")));
 
         var userAuthenticationRequest = UserSamples.sampleUserAuthenticationRequest();
         var throwable = catchThrowable(() -> service.login(userAuthenticationRequest).block());
@@ -70,7 +70,7 @@ class UserFacadeTest {
     @Test
     void shouldThrowErrorWhenWrongPassword() {
         var user = UserSamples.sampleUser(passwordService).build();
-        when(userRepository.findByEmailOrError(anyString())).thenReturn(Mono.just(user));
+        when(userRepository.findByEmailOrFail(anyString())).thenReturn(Mono.just(user));
 
         var userAuthenticationRequest = UserSamples.sampleUserAuthenticationRequest()
                 .setPassword("not default sample password");

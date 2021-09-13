@@ -49,7 +49,7 @@ public class ArticleFacade {
     public Mono<MultipleArticlesView> feed(int offset, int limit, User currentUser) {
         var followingAuthorIds = currentUser.getFollowingIds();
         return articleRepository
-                .findMostRecentArticlesByAuthorIds(followingAuthorIds, offset, limit)
+                .findNewestArticlesByAuthorIds(followingAuthorIds, offset, limit)
                 .flatMap(article -> articleMapper.mapToArticleView(article, currentUser))
                 .collectList()
                 .map(MultipleArticlesView::of);
@@ -65,7 +65,7 @@ public class ArticleFacade {
     }
 
     public Mono<ArticleView> updateArticle(String slug, UpdateArticleRequest request, User currentUser) {
-        return articleRepository.findBySlugOrError(slug)
+        return articleRepository.findBySlugOrFail(slug)
                 .map(article -> updateArticle(request, currentUser, article));
     }
 
@@ -108,6 +108,10 @@ public class ArticleFacade {
     }
 
     private ArticleView updateArticle(UpdateArticleRequest request, User currentUser, Article article) {
+        if (!article.isAuthor(currentUser)) {
+            throw new InvalidRequestException("Article", "only author can update article");
+        }
+
         ofNullable(request.getBody())
                 .ifPresent(article::setBody);
         ofNullable(request.getDescription())

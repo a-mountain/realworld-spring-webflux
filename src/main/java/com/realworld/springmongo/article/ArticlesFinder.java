@@ -20,7 +20,7 @@ class ArticlesFinder {
 
     public Mono<MultipleArticlesView> findArticles(String tag, String author, String favoritedByUser, int offset, int limit, Optional<User> currentUser) {
         return createFindArticleRequest(tag, author, favoritedByUser, offset, limit)
-                .flatMapMany(articleRepository::findMostRecentArticlesFilteredBy)
+                .flatMapMany(articleRepository::findNewestArticlesFilteredBy)
                 .flatMap(article -> articleMapper.mapToArticleView(article, currentUser))
                 .collectList()
                 .map(MultipleArticlesView::of);
@@ -31,10 +31,8 @@ class ArticlesFinder {
                 .setOffset(offset)
                 .setLimit(limit)
                 .setTag(tag);
-        Mono<?> addAuthorIdToRequest = addToRequestAuthorId(author, request);
-        Mono<?> addFavoritedByToRequest = addToRequestFavoritedBy(favoritedByUser, request);
-        return addAuthorIdToRequest
-                .then(addFavoritedByToRequest)
+        return addToRequestAuthorId(author, request)
+                .then(addToRequestFavoritedBy(favoritedByUser, request))
                 .thenReturn(request);
     }
 

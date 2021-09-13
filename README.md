@@ -44,3 +44,11 @@ You need Java 16 installed.
 ```
 ./gradlew bootRun
 ```
+
+# For Kotlin Developers
+
+It's [Kotlin Version](https://github.com/a-mountain/realworld-spring-webflux-kt) of RealWorld Implementation with same
+structure, technologies and design approach.
+
+- (+) Comparing to Java Kotlin Coroutines incredibly simplify and reduce the amount of code. (1404 vs 1009 lines)
+- (-) Kotlin is not well-supported by Spring as Java that entails some pitfalls and inconvenience.

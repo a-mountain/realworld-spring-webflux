@@ -5,12 +5,14 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.lang.Nullable;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
 @Document
@@ -28,7 +30,6 @@ public class Article {
     private final String id;
 
     @Getter
-    @CreatedDate
     private final Instant createdAt;
 
     @Getter
@@ -67,24 +68,23 @@ public class Article {
             String title,
             String description,
             String body,
-            Instant createdAt,
-            Instant updatedAt,
-            Integer favoritesCount,
+            @Nullable Instant createdAt,
+            @Nullable Instant updatedAt,
+            @Nullable Integer favoritesCount,
             String authorId,
-            List<String> tags,
-            List<Comment> comments
+            @Nullable List<String> tags,
+            @Nullable List<Comment> comments
     ) {
         this.id = id;
-        this.title = title;
+        setTitle(title);
         this.description = description;
         this.body = body;
         this.createdAt = ofNullable(createdAt).orElse(Instant.now());
-        this.updatedAt = updatedAt;
-        this.favoritesCount = favoritesCount;
+        this.updatedAt = ofNullable(updatedAt).orElse(createdAt);
+        this.favoritesCount = ofNullable(favoritesCount).orElse(0);
         this.authorId = authorId;
         this.tags = ofNullable(tags).orElse(new ArrayList<>());
         this.comments = ofNullable(comments).orElse(new ArrayList<>());
-        updateSlug();
     }
 
     public void incrementFavoritesCount() {
@@ -105,17 +105,13 @@ public class Article {
 
     public void setTitle(String title) {
         this.title = title;
-        updateSlug();
+        this.slug = toSlug(title);
     }
 
     public Optional<Comment> getCommentById(String commentId) {
         return comments.stream()
                 .filter(comment -> comment.getId().equals(commentId))
                 .findFirst();
-    }
-
-    private void updateSlug() {
-        this.slug = toSlug(title);
     }
 
     private String toSlug(String title) {

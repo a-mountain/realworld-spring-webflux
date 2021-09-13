@@ -18,12 +18,12 @@ public interface UserRepository extends ReactiveMongoRepository<User, String> {
         return findById(article.getAuthorId());
     }
 
-    default Mono<User> findByUsernameOrError(String username) {
+    default Mono<User> findByUsernameOrFail(String username) {
         return findByUsername(username)
                 .switchIfEmpty(Mono.error(new InvalidRequestException("Username", "not found")));
     }
 
-    default Mono<User> findByEmailOrError(String email) {
+    default Mono<User> findByEmailOrFail(String email) {
         return findByEmail(email)
                 .switchIfEmpty(Mono.error(new InvalidRequestException("Email", "not found")));
     }

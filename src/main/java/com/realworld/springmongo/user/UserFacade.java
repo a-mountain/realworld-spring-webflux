@@ -15,12 +15,12 @@ public class UserFacade {
     private final UserUpdater userUpdater;
 
     public Mono<ProfileView> getProfile(String profileUsername, User viewer) {
-        return userRepository.findByUsernameOrError(profileUsername)
+        return userRepository.findByUsernameOrFail(profileUsername)
                 .map(user -> ProfileView.toProfileViewForViewer(user, viewer));
     }
 
     public Mono<ProfileView> getProfile(String profileUsername) {
-        return userRepository.findByUsernameOrError(profileUsername)
+        return userRepository.findByUsernameOrFail(profileUsername)
                 .map(ProfileView::toUnfollowedProfileView);
     }
 
@@ -41,7 +41,7 @@ public class UserFacade {
     }
 
     public Mono<ProfileView> follow(String username, User follower) {
-        return userRepository.findByUsernameOrError(username)
+        return userRepository.findByUsernameOrFail(username)
                 .flatMap(userToFollow -> {
                     follower.follow(userToFollow);
                     return userRepository.save(follower).thenReturn(userToFollow);
@@ -50,7 +50,7 @@ public class UserFacade {
     }
 
     public Mono<ProfileView> unfollow(String username, User follower) {
-        return userRepository.findByUsernameOrError(username)
+        return userRepository.findByUsernameOrFail(username)
                 .flatMap(userToUnfollow -> {
                     follower.unfollow(userToUnfollow);
                     return userRepository.save(follower).thenReturn(userToUnfollow);

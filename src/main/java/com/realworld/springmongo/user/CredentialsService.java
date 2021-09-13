@@ -21,20 +21,20 @@ class CredentialsService {
     public Mono<UserView> login(UserAuthenticationRequest request) {
         var email = request.getEmail();
         var password = request.getPassword();
-        return userRepository.findByEmailOrError(email)
+        return userRepository.findByEmailOrFail(email)
                 .map(user -> loginUser(password, user));
     }
 
     public Mono<UserView> signup(UserRegistrationRequest request) {
         return userRepository.existsByEmail(request.getEmail())
                 .flatMap(existsByEmail -> {
-                    if (existsByEmail.equals(true)) {
+                    if (existsByEmail) {
                         return Mono.error(emailAlreadyInUseException());
                     }
                     return userRepository.existsByUsername(request.getUsername());
                 })
                 .flatMap(existsByUsername -> {
-                    if (existsByUsername.equals(true)) {
+                    if (existsByUsername) {
                         return Mono.error(usernameAlreadyInUseException());
                     }
                     return registerNewUser(request);
