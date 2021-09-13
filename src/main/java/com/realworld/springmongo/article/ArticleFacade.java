@@ -108,6 +108,10 @@ public class ArticleFacade {
     }
 
     private ArticleView updateArticle(UpdateArticleRequest request, User currentUser, Article article) {
+        if (!article.isAuthor(currentUser)) {
+            throw new InvalidRequestException("Article", "only author can update article");
+        }
+
         ofNullable(request.getBody())
                 .ifPresent(article::setBody);
         ofNullable(request.getDescription())

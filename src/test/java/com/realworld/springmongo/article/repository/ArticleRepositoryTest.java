@@ -70,7 +70,7 @@ class ArticleRepositoryTest {
                     .limit(size)
                     .toList();
 
-            var actual = articleRepository.findMostRecentArticlesFilteredBy(null, null, null, size, 0)
+            var actual = articleRepository.findNewestArticlesFilteredBy(null, null, null, size, 0)
                     .collectList()
                     .block();
 
@@ -88,7 +88,7 @@ class ArticleRepositoryTest {
                     .limit(5)
                     .toList();
 
-            var actual = articleRepository.findMostRecentArticlesFilteredBy(null, null, null, size, offset)
+            var actual = articleRepository.findNewestArticlesFilteredBy(null, null, null, size, offset)
                     .collectList()
                     .block();
 
@@ -111,7 +111,7 @@ class ArticleRepositoryTest {
                     .skip(offset)
                     .toList();
 
-            var actual = articleRepository.findMostRecentArticlesFilteredBy(expectedTag, null, null, 0, offset)
+            var actual = articleRepository.findNewestArticlesFilteredBy(expectedTag, null, null, 0, offset)
                     .collectList()
                     .block();
 
@@ -134,7 +134,7 @@ class ArticleRepositoryTest {
                     .limit(limit)
                     .toList();
 
-            var actual = articleRepository.findMostRecentArticlesFilteredBy(null, expectedAuthor, null, limit, 0)
+            var actual = articleRepository.findNewestArticlesFilteredBy(null, expectedAuthor, null, limit, 0)
                     .collectList()
                     .block();
 
@@ -153,7 +153,7 @@ class ArticleRepositoryTest {
                     .limit(limit)
                     .toList();
 
-            var actual = articleRepository.findMostRecentArticlesFilteredBy(null, null, user, limit, 0)
+            var actual = articleRepository.findNewestArticlesFilteredBy(null, null, user, limit, 0)
                     .collectList()
                     .block();
 
@@ -188,7 +188,7 @@ class ArticleRepositoryTest {
                     .limit(limit)
                     .toList();
 
-            var actual = articleRepository.findMostRecentArticlesFilteredBy(expectedTag, expectedAuthor, user, limit, 0)
+            var actual = articleRepository.findNewestArticlesFilteredBy(expectedTag, expectedAuthor, user, limit, 0)
                     .collectList()
                     .block();
 

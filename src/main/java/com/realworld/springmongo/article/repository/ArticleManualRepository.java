@@ -14,14 +14,14 @@ import static java.util.Optional.ofNullable;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 public interface ArticleManualRepository {
-    Flux<Article> findMostRecentArticlesFilteredBy(@Nullable String tag,
-                                                   @Nullable String authorId,
-                                                   @Nullable User favoritedBy,
-                                                   int limit,
-                                                   int offset);
+    Flux<Article> findNewestArticlesFilteredBy(@Nullable String tag,
+                                               @Nullable String authorId,
+                                               @Nullable User favoritedBy,
+                                               int limit,
+                                               int offset);
 
-    default Flux<Article> findMostRecentArticlesFilteredBy(FindArticlesRequest request) {
-        return findMostRecentArticlesFilteredBy(request.getTag(),
+    default Flux<Article> findNewestArticlesFilteredBy(FindArticlesRequest request) {
+        return findNewestArticlesFilteredBy(request.getTag(),
                 request.getAuthorId(),
                 request.getFavoritedBy(),
                 request.getLimit(),
@@ -35,11 +35,11 @@ class ArticleManualRepositoryImpl implements ArticleManualRepository {
     private final ReactiveMongoTemplate mongoTemplate;
 
     @Override
-    public Flux<Article> findMostRecentArticlesFilteredBy(@Nullable String tag,
-                                                          @Nullable String authorId,
-                                                          @Nullable User favoritedBy,
-                                                          int limit,
-                                                          int offset) {
+    public Flux<Article> findNewestArticlesFilteredBy(@Nullable String tag,
+                                                      @Nullable String authorId,
+                                                      @Nullable User favoritedBy,
+                                                      int limit,
+                                                      int offset) {
         var query = new Query()
                 .skip(offset)
                 .limit(limit)
